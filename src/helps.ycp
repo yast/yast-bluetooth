@@ -32,7 +32,7 @@ computer.</P>
 
     /* Help text for global settings dialog 3/4*/
 _("<P>Assign which services (or <I>Profiles</I> as they are called in Bluetooth) are available
-when the Bluetooth system is starts in <B>Advanced Daemon Configuration<B>.</P>
+when the Bluetooth system starts in <B>Advanced Daemon Configuration<B>.</P>
 ") +
 
     /* Help text for global settings dialog 4/4*/
