@@ -75,7 +75,9 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if(func == "Write") {
+    Progress::off();
     Bluetooth::Write();
+    Progress::off();
 }
 /* unknown function */
 else {

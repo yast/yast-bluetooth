@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 17 17:14:57 CEST 2004 - lslezak@suse.cz
+
+- don't show write progress during installation
+- version 2.10.5
+
+-------------------------------------------------------------------
 Mon Sep 13 17:43:27 CEST 2004 - lslezak@suse.cz
 
 - stop bluetooth service if it's disabled
