@@ -21,3 +21,4 @@ Exec=/sbin/yast2 bluetooth
 
 Name=Bluetooth
 GenericName=Bluetooth Configuration
+X-KDE-SubstituteUID=true
