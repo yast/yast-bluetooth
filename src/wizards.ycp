@@ -1,0 +1,106 @@
+/**
+ * File:	include/bluetooth/wizards.ycp
+ * Package:	Configuration of bluetooth
+ * Summary:	Wizards definitions
+ * Authors:	Ladislav Slezak <lslezak@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "bluetooth";
+
+import "Sequencer";
+import "Wizard";
+
+include "bluetooth/complex.ycp";
+include "bluetooth/dialogs.ycp";
+
+/**
+ * Main workflow of the bluetooth configuration
+ * @return sequence result
+ */
+any MainSequence() {
+
+    // sequencer aliases
+    map aliases = $[
+	"global"	: ``(GlobalOptionsDialog()),
+	"services"	: ``(DaemonDialog()),
+	"security"	: ``(SecurityDialog())
+    ];
+
+    // sequence of dialogs
+    map sequence = $[
+	"ws_start" : "global",
+	"global" : $[
+	    `services	: "services",
+	    `security	: "security",
+	    `abort	: `abort,
+	    `next	: `next
+	],
+	"services" : $[
+	    `next	: "global",
+	    `abort	: `abort
+	],
+	"security" : $[
+	    `next	: "global",
+	    `abort	: `abort
+	]
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Whole configuration of bluetooth
+ * @return sequence result
+ */
+any BluetoothSequence() {
+
+    map aliases = $[
+	"read"	: [ ``( ReadDialog() ), true ],
+	"main"	:   ``( MainSequence() ),
+	"write"	: [ ``( WriteDialog() ), true ]
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	]
+    ];
+
+    Wizard::CreateDialog();
+
+    any ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of bluetooth but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+any BluetoothAutoSequence() {
+
+    Wizard::CreateDialog();
+    any ret = MainSequence();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/* EOF */
+}

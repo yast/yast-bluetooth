@@ -1,0 +1,32 @@
+@HEADER-COMMENT@
+# neededforbuild yast2-devel-packages
+
+@HEADER@
+Requires:	yast2
+
+BuildArchitectures:	noarch
+
+Summary:	Bluetooth configuration module
+
+%description
+-
+
+@PREP@
+
+@BUILD@
+
+@INSTALL@
+
+@CLEAN@
+
+%files
+%defattr(-,root,root)
+%dir @yncludedir@/bluetooth
+@yncludedir@/bluetooth/*
+@clientdir@/bluetooth.ycp
+@clientdir@/bluetooth_*.ycp
+@moduledir@/Bluetooth.*
+@scrconfdir@/bt_hcid.scr
+@scrconfdir@/cfg_bluetooth.scr
+@desktopdir@/bluetooth.desktop
+%doc @docdir@
