@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 29 16:20:46 CEST 2004 - lslezak@suse.cz
+
+- don't install bluez-utils at installation proposal (#46380)
+- version 2.10.7
+
+-------------------------------------------------------------------
 Thu Sep 23 10:09:46 CEST 2004 - lslezak@suse.cz
 
 - install package bluez-utils at start if it's missing (#45862)

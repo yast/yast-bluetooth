@@ -42,6 +42,11 @@ boolean PollAbort() {
 symbol ReadDialog() {
     Wizard::RestoreHelp(HELPS["read"]:"");
     // Bluetooth::AbortFunction = PollAbort;
+    if (Bluetooth::InstallPackages() == false)
+    {
+	return `abort;
+    }
+
     boolean ret = Bluetooth::Read();
     return ret ? `next : `abort;
 }
