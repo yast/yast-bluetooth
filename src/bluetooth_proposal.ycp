@@ -27,7 +27,6 @@ map ret = $[];
 
 /* create a textual proposal */
 if(func == "MakeProposal") {
-    string proposal = "";
     string warning = nil;
     symbol warning_level = nil;
     boolean force_reset = param["force_reset"]:false;
@@ -35,11 +34,17 @@ if(func == "MakeProposal") {
     if(force_reset || !Bluetooth::proposal_valid) {
         Bluetooth::proposal_valid = true;
 	Progress::off();
-	Bluetooth::Read();
+
+	// open progress popup window
+	UI::OpenDialog(`VBox(`Label(_("Detecting Bluetooth adapters..."))));
+	// detect Bluetooth device and propose configuration
+	Bluetooth::Propose();
+
+	// close progress popup
+	UI::CloseDialog();
+	Progress::on();
     }
-    list sum = Bluetooth::Summary();
-    proposal = sum[0]:"";
-    Progress::on();
+    string proposal = Bluetooth::Summary();
 
     ret = $[
 	"preformatted_proposal" : proposal,

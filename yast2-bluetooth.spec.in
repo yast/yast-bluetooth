@@ -2,7 +2,8 @@
 # neededforbuild yast2-devel-packages
 
 @HEADER@
-Requires:	yast2
+# bluez-utils contains bluetooth initscript, basic utilities (hcitool) and config files
+Requires:	yast2, bluez-utils
 
 BuildArchitectures:	noarch
 

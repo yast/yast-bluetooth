@@ -125,6 +125,8 @@ global boolean Read() {
     list<string> detected_services = detect_services(dir);
     y2debug("detected services: %1", detected_services);
 
+    // reset daemon list
+    daemons = [];
     foreach(string service, detected_services, ``{
 	    // read start status
 	    boolean service_enabled = (SCR::Read(.sysconfig.bluetooth + (service + "_START")) == "yes");
@@ -275,17 +277,47 @@ global map Export () {
     ];
 }
 
+global void Propose() {
+    // read settings
+    Read();
+
+    // was detected bluetooth adapter?
+    boolean detected = false;
+
+    // start bluetooth service
+    Service::Start("bluetooth");
+
+    // query local bluetooth devices (adapters)
+    map<string,any> out = (map<string,any>)SCR::Execute(.target.bash_output, "/usr/bin/hcitool dev");
+
+    if (out["exit"]:-1 == 0)
+    {
+	list<string> devs = splitstring(out["stdout"]:"", "\n");
+	y2debug("devs: %1", devs);
+
+	// if output has more than 2 line then a local bluetooth device was found
+	// (there is a header on the firast line and empty line at the end)
+	detected = size(devs) > 2;
+    }
+
+    // stop bluetooth service
+    Service::Stop("bluetooth");
+
+    // set enabled/disabled status depending on found bluetooth adapters
+    enabled = detected;
+}
+
 /**
  * Create a textual summary of configuration
  * @return summary of the current configuration
  */
-global list<string> Summary() {
+global string Summary() {
     /* Configuration summary text */
 
     // status string
     string status = (enabled) ? _("Enabled") : _("Disabled");
 
-    list<string> ret = [ status ];
+    string ret = sformat("<ul><li>%1</li>", status);
 
     if (enabled)
     {
@@ -307,9 +339,17 @@ global list<string> Summary() {
 	    }
 	);
 
-	// status string, %1 is replaced by list of daemons (e.g. "HCI, SDP, PAND")
-	sformat(_("Started services: %1)"), enabled_daemons);
+	if (enabled_daemons == "")
+	{
+	    // no daemon is enabled, appended to string "Started services: "
+	    enabled_daemons = _("<I>None</I>");
+	}
+
+	// status string, %1 is replaced by list of daemons (e.g. "HCI, SDP, PAND") or "none"
+	ret = ret + sformat(_("<li>Started services: %1</li>"), enabled_daemons);
     }
+
+    ret = ret + "</ul>";
 
     return ret;
 }

@@ -44,7 +44,7 @@ y2debug("param=%1", param);
 
 /* Create a summary*/
 if(func == "Summary") {
-    ret = select(Bluetooth::Summary(), 0, "");
+    ret = Bluetooth::Summary();
 }
 /* Reset configuration */
 else if (func == "Reset") {

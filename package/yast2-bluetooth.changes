@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug  5 17:00:40 CEST 2004 - lslezak@suse.cz
+
+- summary and proposal functions
+- Require: bluez-utils (initscript, hcitool, configfiles)
+- version 2.10.1
+
+-------------------------------------------------------------------
 Wed Aug  4 15:56:07 CEST 2004 - lslezak@suse.cz
 
 - read/write settings from/to the config files
