@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Oct 29 15:36:39 CEST 2004 - jsuchome@suse.cz
+
+- fixed desktop file (#45990) 
+
+-------------------------------------------------------------------
 Tue Oct 19 16:19:05 CEST 2004 - lslezak@suse.cz
 
 - use .probe agent to detect Bluetooth devices
