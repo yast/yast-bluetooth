@@ -247,11 +247,15 @@ list<term> CreateDaemonTableTerm(list<map<string,any> > daemons, map<string,stri
 
 		    if (arguments_nows == listen)
 		    {
-			pand_mode = " (listen mode)";
+			// network daemon mode, space at the beginning is required
+			// the text is appended to description of PAND daemon
+			pand_mode = _(" (listen mode)");
 		    }
 		    else if (arguments_nows == search)
 		    {
-			pand_mode = " (search mode)";
+			// network daemon mode, space at the beginning is required
+			// the text is appended to description of PAND daemon
+			pand_mode = _(" (search mode)");
 		    }
 		}
 

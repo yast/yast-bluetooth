@@ -237,7 +237,15 @@ global boolean Write() {
     // restart service
     if (!write_only)
     {
-	Service::Restart("bluetooth");
+	// activate changes
+	if (enabled)
+	{
+	    Service::Restart("bluetooth");
+	}
+	else
+	{
+	    Service::Stop("bluetooth");
+	}
     }
 
     /* Progress finished */
