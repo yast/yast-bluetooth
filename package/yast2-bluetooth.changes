@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jan  6 16:32:54 CET 2005 - lslezak@suse.cz
+
+- new options for configuring local device class, locale device
+  name and security manager (feature #8.12.3.2.)
+- updated OPD help text
+- version 2.11.2
+
+-------------------------------------------------------------------
 Mon Nov  8 14:44:49 CET 2004 - lslezak@suse.cz
 
 - confirm adapter detection in manual mode (#47974)

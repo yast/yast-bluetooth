@@ -29,7 +29,14 @@ void RefreshGlobalWidgets() {
 	boolean BTenabled = (boolean) UI::QueryWidget(`id(`BTenable), `Value);
 	UI::ChangeWidget(`id(`services), `Enabled, BTenabled);
 	UI::ChangeWidget(`id(`security), `Enabled, BTenabled);
+	UI::ChangeWidget(`id(`classes), `Enabled, BTenabled);
 	UI::ChangeWidget(`id(`fr), `Enabled, BTenabled);
+	UI::ChangeWidget(`id(`fr_security), `Enabled, BTenabled);
+}
+
+void RefreshPINWidgets() {
+	boolean PINenabled = (boolean) UI::QueryWidget(`id(`sm_auto), `Value);
+	UI::ChangeWidget(`id(`pin), `Enabled, PINenabled);
 }
 
 /**
@@ -57,19 +64,48 @@ symbol GlobalOptionsDialog () {
 			`VBox(
 			    `HBox(
 				`HSpacing(1),
-				`Password(`id(`pin), _("I&dentification Number (PIN)"), Bluetooth::pin),
+				`TextEntry(`id(`device_name), _("&Device Name"), Bluetooth::device_name),
 				`HSpacing(1)
 			    ),
-			    `VSpacing(0.2)
+			    `VSpacing(0.4)
 			)
 		    ),
 		    `HSpacing(1)
 		),
 
 		`VSpacing(1),
+
+		`HBox(
+		    `HSpacing(4),
+		    `Frame(`id(`fr_security), _("Security Manager"),
+			`RadioButtonGroup(`id(`rbg),
+			    `VBox(
+				`VSpacing(0.3),
+				`Left(`RadioButton(`id(`sm_none), `opt(`notify), _("&Security manager disabled"), Bluetooth::security_manager == "none")),
+				`VSpacing(0.5),
+				`Left(`RadioButton(`id(`sm_auto), `opt(`notify), _("Use local &PIN for incoming connections"), Bluetooth::security_manager == "auto")),
+				    `HBox(
+					`HSpacing(3),
+					`Password(`id(`pin), _("I&dentification Number (PIN)"), Bluetooth::pin),
+					`HSpacing(1)
+				    ),
+				`VSpacing(0.5),
+				`Left(`RadioButton(`id(`sm_user), `opt(`notify), _("Always ask &user for a PIN"), Bluetooth::security_manager == "user")),
+				`VSpacing(0.4)
+			    )
+			)
+		    ),
+		    `HSpacing(1)
+		),
+
+
+
+		`VSpacing(2),
 		`PushButton(`id(`services), _("Advanced &Daemon Configuration...")),
 		`VSpacing(0.5),
-		`PushButton(`id(`security), _("&Security Options..."))
+		`PushButton(`id(`security), _("&Security Options...")),
+		`VSpacing(0.5),
+		`PushButton(`id(`classes), _("&Device and Service Classes..."))
 	    )
 	)
     );
@@ -84,6 +120,7 @@ symbol GlobalOptionsDialog () {
     UI::ChangeWidget(`id(`pin), `ValidChars, "0132456789");
 
     RefreshGlobalWidgets();
+    RefreshPINWidgets();
 
     symbol ret = nil;
 
@@ -101,15 +138,35 @@ symbol GlobalOptionsDialog () {
 	{
             break;
         }
-	else if (ret == `next || ret == `security || ret == `services)
+	else if (ret == `next || ret == `security || ret == `services || ret == `classes)
 	{
 	    Bluetooth::pin = (string) UI::QueryWidget(`id(`pin), `Value);
 	    Bluetooth::enabled = (boolean) UI::QueryWidget(`id(`BTenable), `Value);
+	    Bluetooth::device_name = (string) UI::QueryWidget(`id(`device_name), `Value);
+
+	    symbol current_sm = (symbol) UI::QueryWidget(`id(`rbg), `CurrentButton);
+	    if (current_sm == `sm_none)
+	    {
+		Bluetooth::security_manager = "none";
+	    }
+	    else if (current_sm == `sm_auto)
+	    {
+		Bluetooth::security_manager = "auto";
+	    }
+	    else if (current_sm == `sm_user)
+	    {
+		Bluetooth::security_manager = "user";
+	    }
+
 	    break;
 	}
 	else if (ret == `BTenable || ret == `BTdisable)
 	{
 	    RefreshGlobalWidgets();
+	}
+	else if (ret == `sm_user || ret == `sm_auto || ret == `sm_none)
+	{
+	    RefreshPINWidgets();
 	}
         else
 	{
@@ -449,6 +506,7 @@ symbol SecurityDialog () {
 
 	    Bluetooth::inquiry_scan = (boolean) UI::QueryWidget(`id(`inq), `Value);
 	    Bluetooth::page_scan = (boolean) UI::QueryWidget(`id(`page), `Value);
+
 	    break;
 	}
 	else if (ret == `auth)
@@ -465,5 +523,104 @@ symbol SecurityDialog () {
 }
 
 
+/**
+ * Dialog for configuration device and service class provided by the machine.
+ * @return symbol dialog result
+ */
+symbol ClassDialog () {
+
+    /* caption in bluetooth class configuration dialog */
+    string caption = _("Class Configuration");
+
+    list<term> class_list = [
+	// combo box item - device class
+	`item(`id(0x100), _("Computer"), Bluetooth::device_class == 0x100),
+	// combo box item - device class
+	`item(`id(0x104), _("Computer (Desktop)"), Bluetooth::device_class == 0x104),
+	// combo box item - device class
+	`item(`id(0x108), _("Computer (Server)"), Bluetooth::device_class == 0x108),
+	// combo box item - device class
+	`item(`id(0x10C), _("Computer (Laptop)"), Bluetooth::device_class == 0x10C)
+    ];
+
+	//`item(`id(`computer_desktop), _("No Service Class Associated"), Bluetooth::service_class == 0x104),
+    list<term> service_list = [
+	// service class name and description
+	`item(`id(0x010000), _("Positioning (Location identification)"),		(Bluetooth::service_class & 0x010000) == 0x010000),
+	// service class name and description
+	`item(`id(0x020000), _("Networking (LAN, Ad hoc, ...)"),			(Bluetooth::service_class & 0x020000) == 0x020000),
+	// service class name and description
+	`item(`id(0x040000), _("Rendering (Printing, Speaker, ...)"),			(Bluetooth::service_class & 0x040000) == 0x040000),
+	// service class name and description
+	`item(`id(0x080000), _("Capturing (Scanner, Microphone, ...)"),			(Bluetooth::service_class & 0x080000) == 0x080000),
+	// service class name and description
+	`item(`id(0x100000), _("Object Transfer (v-Inbox, v-Folder, ...)"),		(Bluetooth::service_class & 0x100000) == 0x100000),
+	// service class name and description
+	`item(`id(0x200000), _("Audio (Speaker, Microphone, Headset service, ...)"),	(Bluetooth::service_class & 0x200000) == 0x200000),
+	// service class name and description
+	`item(`id(0x400000), _("Telephony (Cordless telephony, Modem, Headset service, ...)"), (Bluetooth::service_class & 0x400000) == 0x400000),
+	// service class name and description
+	`item(`id(0x800000), _("Information (WEB-server, WAP-server, ...)"),		(Bluetooth::service_class & 0x800000) == 0x800000),
+    ];
+
+    /* Bluetooth configuration dialog content */
+    term contents = `VBox(
+	`VSpacing(1),
+
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`Left(`ComboBox(`id(`device_class), _("&Device Class"), class_list)),
+		`VSpacing(1),
+		`MultiSelectionBox(`id(`service_class), _("&Service Class"), service_list)
+	    ),
+	    `HSpacing(1)
+	),
+
+	`VSpacing(1)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["classes"]:"",
+	    Label::BackButton(), Label::OKButton());
+
+    symbol ret = nil;
+
+    while (true) {
+	ret = (symbol) UI::UserInput();
+
+	/* abort? */
+	if (ret == `abort || ret == `cancel) {
+	    if (ReallyAbort()) break;
+	    else continue;
+	}
+        else if (ret == `next) {
+	    Bluetooth::device_class = (integer)UI::QueryWidget(`id(`device_class), `Value);
+
+	    // merge selected service classes
+	    list<integer> selected_items = (list<integer>)UI::QueryWidget(`id(`service_class), `SelectedItems);
+	    integer service_class = 0;
+	    if (selected_items != nil && size(selected_items) > 0)
+	    {
+		foreach(integer class, selected_items, ``{
+			service_class = service_class | class;
+		    }
+		);
+	    }
+
+	    Bluetooth::service_class = service_class;
+
+            break;
+        }
+        else if (ret == `back) {
+            break;
+        }
+        else {
+            y2error("unexpected retcode: %1", ret);
+            continue;
+        }
+    }
+
+    return ret;
+}
 /* EOF */
 }

@@ -96,6 +96,15 @@ global list<map<string,any> > daemons = [];
 // PIN number
 global string pin = "";
 
+// security manager mode - PIN management
+global string security_manager = "auto";
+
+// local device name (%h is hostname, %d is device ID)
+global string device_name = "BlueZ %h (%d)";
+
+global integer device_class = 0x100;
+
+global integer service_class = 0x100000;
 
 define list<string> detect_services(list<string> all) ``{
     list<string> ret = [];
@@ -167,6 +176,29 @@ global boolean Read() {
     page_scan = (SCR::Read(.bluetooth.hcid.value.device.pscan) == ["enable"]);
     y2milestone("page_scan: %1", page_scan);
 
+    security_manager = ((list<string>)SCR::Read(.bluetooth.hcid.value.options.security))[0]:"auto";
+    y2milestone("security_manager: %1", security_manager);
+    device_name = ((list<string>)SCR::Read(.bluetooth.hcid.value.device.name))[0]:"\"BlueZ %h (%d)\"";
+
+    // remove leading and trailing double quotes
+    string device_name_parsed = regexpsub(device_name, "^\"(.*)\"$", "\\1");
+    if (device_name_parsed != nil)
+    {
+	device_name = device_name_parsed;
+    }
+    y2milestone("device_name: %1", device_name);
+
+    // read device and service class
+    string class_str = ((list<string>)SCR::Read(.bluetooth.hcid.value.device.class))[0]:"0x100100";
+    y2milestone("class_str: %1", class_str);
+    integer class = tointeger(class_str);
+
+    device_class = class & 0xFFF;
+    y2milestone("device_class: %1", tohexstring(device_class));
+    service_class = class & ~0xFFF;
+    y2milestone("service_class: %1", tohexstring(service_class));
+
+
     // read PIN
     list<string> p = splitstring((string)SCR::Read(.target.string, "/etc/bluetooth/pin"), "\n");
     pin = p[0]:"";
@@ -220,6 +252,23 @@ global boolean Write() {
     SCR::Write(.bluetooth.hcid.value.device.encrypt, [encryption ? "enable" : "disable"]);
     SCR::Write(.bluetooth.hcid.value.device.iscan, [inquiry_scan ? "enable" : "disable"]);
     SCR::Write(.bluetooth.hcid.value.device.pscan, [page_scan ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.options.security, [security_manager]);
+
+    // save device name
+    string device_name_save = device_name;
+    if (!regexpmatch(device_name_save, "^\""))
+    {
+	device_name_save = "\"" + device_name_save;
+    }
+    if (!regexpmatch(device_name_save, "\"$"))
+    {
+	device_name_save = device_name_save + "\"";
+    }
+    SCR::Write(.bluetooth.hcid.value.device.name, [device_name_save]);
+
+    // write class settings
+    string class_str = tohexstring(device_class + service_class);
+    SCR::Write(.bluetooth.hcid.value.device.class, [class_str]);
 
     // write PIN
     SCR::Write(.target.string, "/etc/bluetooth/pin", pin);

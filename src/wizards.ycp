@@ -27,6 +27,7 @@ any MainSequence() {
     map aliases = $[
 	"global"	: ``(GlobalOptionsDialog()),
 	"services"	: ``(DaemonDialog()),
+	"classes"	: ``(ClassDialog()),
 	"security"	: ``(SecurityDialog())
     ];
 
@@ -36,6 +37,7 @@ any MainSequence() {
 	"global" : $[
 	    `services	: "services",
 	    `security	: "security",
+	    `classes	: "classes",
 	    `abort	: `abort,
 	    `next	: `next
 	],
@@ -44,6 +46,10 @@ any MainSequence() {
 	    `abort	: `abort
 	],
 	"security" : $[
+	    `next	: "global",
+	    `abort	: `abort
+	],
+	"classes" : $[
 	    `next	: "global",
 	    `abort	: `abort
 	]
