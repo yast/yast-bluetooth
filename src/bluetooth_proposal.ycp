@@ -63,6 +63,10 @@ else if(func == "AskUser") {
 
 	if (Bluetooth::config_read == false)
 	{
+	    // workaround - ini-agent doesn't reread file content
+	    // so start it completely again
+	    SCR::UnmountAgent(.sysconfig.bluetooth);
+
 	    Bluetooth::Read();
 	    Bluetooth::config_read = true;
 	}

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar  7 15:21:04 CET 2005 - lslezak@suse.cz
+
+- unmount sysconfig agent (reread sysconfig file again) -
+  workaround for #66344
+- 2.11.4
+
+-------------------------------------------------------------------
 Mon Feb  7 16:51:54 CET 2005 - lslezak@suse.cz
 
 - merged proofread texts
