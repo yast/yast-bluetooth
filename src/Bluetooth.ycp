@@ -19,6 +19,7 @@ import "Progress";
 import "Report";
 import "Summary";
 import "Service";
+import "Require";
 
 /**
  * Prototypes
@@ -57,6 +58,9 @@ global define boolean Abort() ``{
     }
     return false;
 }
+
+// list of required packages (installed at Write)
+list<string> required_packages = ["bluez-utils"];
 
 /**
  * Data was modified?
@@ -193,6 +197,15 @@ global boolean Write() {
 
     // write settings
     Progress::NextStage();
+
+    if (enabled)
+    {
+	// %1 is a package name (bluez-utils)
+	if (Require::RequireAndConflict(required_packages, [], _("Package %1 will be installed.")) == false)
+	{
+	    return false;
+	}
+    }
 
     // write global settings
     SCR::Write(.sysconfig.bluetooth.START_SERVICES, (enabled) ? "yes" : "no");

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 27 15:28:08 CEST 2004 - lslezak@suse.cz
+
+- remove bluez-utils from Require (#44401)
+- merged proofread texts
+- version 2.10.3
+
+-------------------------------------------------------------------
 Mon Aug 16 14:52:22 CEST 2004 - lslezak@suse.cz
 
 - don't check whether bluetooth service is enabled
