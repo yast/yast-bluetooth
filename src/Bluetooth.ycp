@@ -179,12 +179,12 @@ global boolean Write() {
 	    /* Progress stage 1/2 */
 	    _("Write the settings"),
 	    /* Progress stage 2/2 */
-	    _("Restart Bluetooth Service")
+	    _("Restart Bluetooth service")
 	], [
 	    /* Progress step 1/2 */
 	    _("Writing the settings..."),
 	    /* Progress step 2/2 */
-	    _("Restarting Bluetooth Service..."),
+	    _("Restarting Bluetooth service..."),
 	    /* Progress finished */
 	    _("Finished")
 	],

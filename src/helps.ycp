@@ -25,78 +25,92 @@ Please wait...<br></p>
     "global" : _("<P><B>Configure Bluetooth Support</B></P>") +
 
     /* Help text for global settings dialog 2/4*/
-_("<P>If you enable Bluetooth support, the Bluetooth system will be started
+_("<P>If you enable Bluetooth support, the Bluetooth system is started
 automatically by the hotplug system after a Bluetooth adapter is found in your
-computer.</P>") +
+computer.</P>
+") +
 
     /* Help text for global settings dialog 3/4*/
-_("<P>Which services (or <I>Profiles</I> as they are called in Bluetooth) are available
-when the Bluetooth system is started is assigned in <B>Advanced Daemon Configuration<B>.</P>") +
+_("<P>Assign which services (or <I>Profiles</I> as they are called in Bluetooth) are available
+when the Bluetooth system is starts in <B>Advanced Daemon Configuration<B>.</P>
+") +
 
     /* Help text for global settings dialog 4/4*/
 _("<P>Some devices require a PIN for identification. Usually this is a four or
-five digit number. If no PIN is required choose '00000'.</P>"),
+five digit number. If no PIN is required, choose '00000'.</P>
+"),
 
 
     /* Help text for service configuration dialog 1/10 */
     "daemon" : _("<P><B>Daemon Configuration</B></P>") +
 
     /* Help text for service configuration dialog 2/10 */
-_("<P>The daemons here provide various services. If you want to change daemon
-settings press <B>Edit</B> button.</P>") +
+_("<P>The daemons here provide various services. To change daemon
+settings, press <B>Edit</B>.</P>
+") +
 
     /* Help text for service configuration dialog 3/10 */
-_("<P><B>HCID</B> - The Host Controller Interface Daemon manages all Bluetooth
-devices in your computer.</P>") +
+_("<P><B>HCID</B> -- The host controller interface daemon manages all Bluetooth
+devices in your computer.</P>
+") +
 
     /* Help text for service configuration dialog 4/10 */
-_("<P><B>SDPD</B> - The Service Discovery Protocol Daemon is needed from remote devices to
-find out which bluetooth-services are available on your computer. The other
-daemons connect to this one.</P>") +
+_("<P><B>SDPD</B> -- The service discovery protocol daemon is needed from remote devices to
+find out which Bluetooth services are available on your computer. The other
+daemons connect to this one.</P>
+") +
 
     /* Help text for service configuration dialog 5/10 */
-_("<P><B>OPD</B> - The OBEX Push Daemon is needed if you want to e.g. transfer files from a device
-onto your computer.</P>") +
+_("<P><B>OPD</B> -- The OBEX push daemon is needed, for example, to transfer files from a device
+onto your computer.</P>
+") +
 
     /* Help text for service configuration dialog 6/10 */
-_("<P><B>RFCOMM</B> - It's a Serial Cable Emulation Protocol needed for some devices and
-services. It's not a 'real' daemon, but a process configuring the existing
-bluetooth-devices.</P>") +
+_("<P><B>RFCOMM</B> -- This is a serial cable emulation protocol needed for some devices and
+services. It is not a 'real' daemon, but a process configuring the existing
+Bluetooth devices.</P>
+") +
 
     /* Help text for service configuration dialog 7/10 */
-_("<P><B>PAND</B> - The Personal Area Network Daemon is used to create
-networks using Bluetooth. It creates a kind of 'wireless ethernet'-network.</P>") +
+_("<P><B>PAND</B> -- The personal area network daemon is used to create
+networks using Bluetooth. It creates a kind of wireless ethernet network.</P>
+") +
 
     /* Help text for service configuration dialog 8/10 */
-_("<P><B>DUND</B> - The Dial-Up networking daemon allows to have LAN access over
-PPP. You need it if you have a Bluetooth-modem.</P>") +
+_("<P><B>DUND</B> -- The dial-up networking daemon allows LAN access over
+PPP. You need it if you have a Bluetooth modem.</P>
+") +
 
     /* Help text for service configuration dialog 9/10 */
-_("<P><B>HID</B> - The Human Interface Device Profil is used for devices like
-keyboard and mouse.</P>") +
+_("<P><B>HID</B> -- The human interface device profile is used for devices like
+keyboard and mouse.</P>
+") +
 
     /* Help text for service configuration dialog 10/10 */
-_("<P><B>HID2HCI</B> - This is actually no 'real' daemon, but a help-util to switch
-a HID-adapter into HCI-mode (or vice versa). Normally you shouldn't need it.</P>"),
+_("<P><B>HID2HCI</B> -- This is actually not a 'real' daemon, but a help utility to switch
+a HID adapter into HCI mode (or vice versa). Normally you should not need it.</P>
+"),
 
     /* Help text for detailed service configuration dialog 1/5*/
     "security" : _("<P><B>Security Options</B></P>") +
 
     /* Help text for detailed service configuration dialog 2/5*/
-_("<P>To enhance security you should enable <B>Authentification</B> and <B>Encryption</B>.</P>") +
+_("<P>To enhance security, you should enable <B>Authentication</B> and <B>Encryption</B>.</P>") +
 
     /* Help text for detailed service configuration dialog 3/5*/
-_("<P>Encryption can only be done if authentification is enabled. Activating both
-enhances security a little bit, but you often run into problems if you do so:
+_("<P>Encryption can only be done if authentication is enabled. Activating both
+enhances security a little bit, but you often run into problems if you do so.
 Not all devices support encryption. If you have problems connecting to a remote
-device, try it with encryption disabled.</P>") +
+device, try it with encryption disabled.</P>
+") +
 
     /* Help text for detailed service configuration dialog 4/5*/
-_("<P>With <B>Inquiry Scan</B> option you can decide if remote devices detect your
-adapter when scanning for available devices.</P>") +
+_("<P>With <B>Inquiry Scan</B>, decide if remote devices detect your
+adapter when scanning for available devices.</P>
+") +
 
     /* Help text for detailed service configuration dialog 5/5*/
-_("<P>Enabled <B>Page Scan</B> option allows remote devices to connect to your device.</P>")
+_("<P>Enabling <B>Page Scan</B> allows remote devices to connect to your device.</P>")
 
 ];
 
@@ -104,7 +118,7 @@ map<string,string> daemon_descriptions = $[
     // HCI daemon description
     "HCI"	: _("Bluetooth device manager"),
     // SDP daemon description
-    "SDP"	: _("Device annoucement"),
+    "SDP"	: _("Device announcement"),
     // OPD daemon description
     "OPD"	: _("File transfer service"),
     // RFCOMM daemon description

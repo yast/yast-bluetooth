@@ -53,7 +53,7 @@ symbol GlobalOptionsDialog () {
 
 		`HBox(
 		    `HSpacing(4),
-		    `Frame(`id(`fr), _("Basic configuration"),
+		    `Frame(`id(`fr), _("Basic Configuration"),
 			`VBox(
 			    `HBox(
 				`HSpacing(1),
@@ -145,11 +145,11 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
 	`VSpacing(1),
 	`RadioButtonGroup(`id(`rbg),
 	    `VBox(
-		`Left(`RadioButton(`id(`listen), `opt(`notify), _("Set network dameon to &listen mode"), arguments_nows == listen)),
+		`Left(`RadioButton(`id(`listen), `opt(`notify), _("Set Network Daemon to &Listen Mode"), arguments_nows == listen)),
 		`VSpacing(0.2),
-		`Left(`RadioButton(`id(`search), `opt(`notify), _("Set network daemon to &search mode"), arguments_nows == search)),
+		`Left(`RadioButton(`id(`search), `opt(`notify), _("Set Network Daemon to &Search Mode"), arguments_nows == search)),
 		`VSpacing(0.2),
-		`Left(`RadioButton(`id(`other), `opt(`notify), _("&Other settings"), arguments_nows != listen && arguments_nows != search))
+		`Left(`RadioButton(`id(`other), `opt(`notify), _("&Other Settings"), arguments_nows != listen && arguments_nows != search))
 	    )
 	)
     );
@@ -386,7 +386,7 @@ void RefreshSecurityWidgets() {
 symbol SecurityDialog () {
 
     /* caption in bluetooth services configuration dialog */
-    string caption = _("Security options");
+    string caption = _("Security Options");
 
 
     /* Bluetooth configuration dialog content */
@@ -394,10 +394,10 @@ symbol SecurityDialog () {
 	`HSpacing(3),
 	`VBox(
 	    `VSpacing(1),
-	    `Frame(_("Authentification and Encryption"),
+	    `Frame(_("Authentication and Encryption"),
 		`VBox(
 		    `VSpacing(0.2),
-		    `Left(`CheckBox(`id(`auth), `opt(`notify), _("&Enable Authentification"), Bluetooth::authentification)),
+		    `Left(`CheckBox(`id(`auth), `opt(`notify), _("&Enable Authentication"), Bluetooth::authentification)),
 		    `VSpacing(0.5),
 		    `Left(`CheckBox(`id(`encrypt), _("Enable En&cryption"), Bluetooth::encryption)),
 		    `VSpacing(0.2)
