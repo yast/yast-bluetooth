@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Oct  5 16:53:18 CEST 2004 - lslezak@suse.cz
+
+- fixed encryption setting (#46655)
+
+-------------------------------------------------------------------
 Wed Sep 29 16:20:46 CEST 2004 - lslezak@suse.cz
 
 - don't install bluez-utils at installation proposal (#46380)

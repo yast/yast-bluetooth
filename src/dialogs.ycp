@@ -443,7 +443,10 @@ symbol SecurityDialog () {
 	else if (ret == `next)
 	{
 	    Bluetooth::authentification = (boolean) UI::QueryWidget(`id(`auth), `Value);
-	    Bluetooth::encryption = (boolean) UI::QueryWidget(`id(`encrypt), `Value);
+
+	    Bluetooth::encryption = (Bluetooth::authentification == false) ? false :
+		(boolean) UI::QueryWidget(`id(`encrypt), `Value);
+
 	    Bluetooth::inquiry_scan = (boolean) UI::QueryWidget(`id(`inq), `Value);
 	    Bluetooth::page_scan = (boolean) UI::QueryWidget(`id(`page), `Value);
 	    break;
