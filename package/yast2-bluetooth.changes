@@ -1,0 +1,12 @@
+-------------------------------------------------------------------
+Wed Aug  4 15:56:07 CEST 2004 - lslezak@suse.cz
+
+- read/write settings from/to the config files
+- import/export functions
+- functionality in the dialogs
+- version 2.10.0
+
+-------------------------------------------------------------------
+Mon Aug  2 10:06:04 CEST 2004 - lslezak@suse.cz
+
+- initial version

@@ -14,8 +14,23 @@ textdomain "bluetooth";
 import "Label";
 import "Wizard";
 import "Bluetooth";
+import "String";
 
 include "bluetooth/helps.ycp";
+
+string YES = _("Yes");
+string NO = _("No");
+
+string listen = "--listen --role NAP";
+string search = "--search";
+
+
+void RefreshGlobalWidgets() {
+	boolean BTenabled = (boolean) UI::QueryWidget(`id(`BTenable), `Value);
+	UI::ChangeWidget(`id(`services), `Enabled, BTenabled);
+	UI::ChangeWidget(`id(`security), `Enabled, BTenabled);
+	UI::ChangeWidget(`id(`fr), `Enabled, BTenabled);
+}
 
 /**
  * Show global settings dialog - enable/disable bluetooth support, some global general options
@@ -31,16 +46,21 @@ symbol GlobalOptionsDialog () {
 	`HBox(
 	    `HSpacing(3),
 	    `VBox(
-		`Left(`RadioButton(`id(`BTenable), _("&Disable Bluetooth services"))),
+		`Left(`RadioButton(`id(`BTdisable), `opt(`notify), _("&Disable Bluetooth Services"), !Bluetooth::enabled)),
 		`VSpacing(1),
-		`Left(`RadioButton(`id(`BTdisable), _("&Enable Bluetooth services"))),
+		`Left(`RadioButton(`id(`BTenable), `opt(`notify), _("&Enable Bluetooth Services"), Bluetooth::enabled)),
 		`VSpacing(0.5),
 
 		`HBox(
 		    `HSpacing(4),
-		    `Frame(_("Basic configuration"),
+		    `Frame(`id(`fr), _("Basic configuration"),
 			`VBox(
-			    `Left(`Password(`id(`pin), _("I&dentification number (PIN)")))
+			    `HBox(
+				`HSpacing(1),
+				`Password(`id(`pin), _("I&dentification Number (PIN)"), Bluetooth::pin),
+				`HSpacing(1)
+			    ),
+			    `VSpacing(0.2)
 			)
 		    ),
 		    `HSpacing(1)
@@ -63,6 +83,8 @@ symbol GlobalOptionsDialog () {
     // allow only numbers in PIN widget
     UI::ChangeWidget(`id(`pin), `ValidChars, "0132456789");
 
+    RefreshGlobalWidgets();
+
     symbol ret = nil;
 
     while (true) {
@@ -70,14 +92,27 @@ symbol GlobalOptionsDialog () {
 	ret = (symbol) UI::UserInput();
 
 	/* abort? */
-	if (ret == `abort || ret == `cancel) {
+	if (ret == `abort || ret == `cancel)
+	{
 	    if (ReallyAbort()) break;
 	    else continue;
 	}
-        else if (ret == `next || ret == `back || ret == `security || ret == `services) {
+        else if (ret == `back)
+	{
             break;
         }
-        else {
+	else if (ret == `next || ret == `security || ret == `services)
+	{
+	    Bluetooth::pin = (string) UI::QueryWidget(`id(`pin), `Value);
+	    Bluetooth::enabled = (boolean) UI::QueryWidget(`id(`BTenable), `Value);
+	    break;
+	}
+	else if (ret == `BTenable || ret == `BTdisable)
+	{
+	    RefreshGlobalWidgets();
+	}
+        else
+	{
             y2error("unexpected retcode: %1", ret);
             continue;
         }
@@ -89,6 +124,12 @@ symbol GlobalOptionsDialog () {
     return ret;
 }
 
+void RefreshExpertWidgets() {
+    boolean enable = (boolean) UI::QueryWidget(`id(`other), `Value);
+
+    UI::ChangeWidget(`id(`args), `Enabled, enable);
+}
+
 /**
  * Dialog for expert configuration of the selected bluetooth daemon.
  * @return map dialog result
@@ -98,15 +139,17 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
     /* Dialog caption - daemon configuration */
     string caption = sformat(_("%1 Daemon Configuration"), daemon);
 
+    string arguments_nows = String::CutBlanks(arguments);
+
     term pand_option = `VBox(
 	`VSpacing(1),
 	`RadioButtonGroup(`id(`rbg),
 	    `VBox(
-		`Left(`RadioButton(`id(`listen), _("Set network dameon to &listen mode"))),
+		`Left(`RadioButton(`id(`listen), `opt(`notify), _("Set network dameon to &listen mode"), arguments_nows == listen)),
 		`VSpacing(0.2),
-		`Left(`RadioButton(`id(`search), _("Set network daemon to &search mode"))),
+		`Left(`RadioButton(`id(`search), `opt(`notify), _("Set network daemon to &search mode"), arguments_nows == search)),
 		`VSpacing(0.2),
-		`Left(`RadioButton(`id(`other), _("&Other settings")))
+		`Left(`RadioButton(`id(`other), `opt(`notify), _("&Other settings"), arguments_nows != listen && arguments_nows != search))
 	    )
 	)
     );
@@ -134,6 +177,11 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
 
     UI::SetFocus(`id(`ok));
 
+    if (daemon == "PAND")
+    {
+	RefreshExpertWidgets();
+    }
+
     symbol ret = nil;
 
     while (true) {
@@ -142,6 +190,13 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
         if (ret == `ok || ret == `cancel) {
             break;
         }
+	else if (ret == `listen || ret == `search || ret == `other)
+	{
+	    if (daemon == "PAND")
+	    {
+		RefreshExpertWidgets();
+	    }
+	}
         else {
             y2error("unexpected retcode: %1", ret);
             continue;
@@ -152,7 +207,21 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
 
     if (ret == `ok)
     {
-	string text = (string) UI::QueryWidget(`id(`args), `Value);
+	string text = "";
+
+	if (UI::QueryWidget(`id(`rbg), `CurrentButton) == `listen)
+	{
+	    text = listen;
+	}
+	else if (UI::QueryWidget(`id(`rbg), `CurrentButton) == `search)
+	{
+	    text = search;
+	}
+	else
+	{
+	    text = (string) UI::QueryWidget(`id(`args), `Value);
+	}
+
 	r = add(r, "text", text);
     }
 
@@ -161,24 +230,52 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
     return r;
 }
 
+
+list<term> CreateDaemonTableTerm(list<map<string,any> > daemons, map<string,string> descriptions) {
+    list<term> ret = [];
+
+    if (daemons != nil)
+    {
+	string pand_mode = "";
+
+	foreach(map<string,any> config, daemons, ``{
+		string dname = config["service"]:"";
+
+		if (dname == "PAND")
+		{
+		    string arguments_nows = String::CutBlanks(config["args"]:"");
+
+		    if (arguments_nows == listen)
+		    {
+			pand_mode = " (listen mode)";
+		    }
+		    else if (arguments_nows == search)
+		    {
+			pand_mode = " (search mode)";
+		    }
+		}
+
+		ret = add(ret, `item(`id(dname), dname,
+		    (config["enabled"]:false ? YES : NO), (descriptions[dname]:"") + (dname == "PAND" ? pand_mode : "")));
+	    }
+	);
+    }
+
+    return ret;
+}
+
 /**
  * Dialog for configuration bluetooth daemons.
  * @return symbol dialog result
  */
 symbol DaemonDialog () {
 
+    list<map<string,any> > BTsettings = Bluetooth::daemons;
+
     /* caption in bluetooth services configuration dialog */
     string caption = _("Bluetooth Daemon Configuration");
 
-    list<term> table = [`item(`id(`HCID), "HCID", "yes", "HCI Daemon descriptive summary..."),
-	`item(`id(`SDP), "SDP", "yes", "SDP Daemon"),
-	`item(`id(`OPD), "OPD", "yes", "OPD Daemon"),
-	`item(`id(`RFCOMM), "RFCOMM", "yes", "RFCOMM Daemon"),
-	`item(`id(`PAND), "PAND", "yes", "PAND Daemon"),
-	`item(`id(`DUND), "DUND", "yes", "DUND Daemon"),
-	`item(`id(`HID), "HID", "yes", "HID Daemon"),
-	`item(`id(`HID2HCI), "HID2HCI", "yes", "HID2HCI Daemon"),
-    ];
+    list<term> table = CreateDaemonTableTerm(BTsettings, daemon_descriptions);
 
     /* Bluetooth configuration dialog content */
     term contents = `VBox(
@@ -210,14 +307,63 @@ symbol DaemonDialog () {
 	}
 	else if (ret == `enable || ret == `disable)
 	{
-	    // TODO handle buttons
+	    // get current status
+	    string current = (string) UI::QueryWidget(`id(`daemons), `CurrentItem);
+
+	    // find current options
+	    BTsettings = maplist(map<string,any> d, BTsettings, ``{
+		    if (d["service"]:"" == current)
+		    {
+			d["enabled"] = ret == `enable;
+		    }
+
+		    return d;
+		}
+	    );
+
+	    // refresh dialog content
+	    UI::ChangeWidget(`id(`daemons), `Item(current, 1), (ret == `enable) ? YES : NO);
 	}
-        else if (ret == `next || ret == `back) {
+        else if (ret == `next) {
+	    Bluetooth::daemons = BTsettings;
+            break;
+        }
+        else if (ret == `back) {
             break;
         }
 	else if (ret == `expert)
 	{
-	    DaemonExpertPopup("PAND", "-a -b -c");
+	    string current = (string) UI::QueryWidget(`id(`daemons), `CurrentItem);
+
+	    boolean pand_changed = false;
+
+	    // update setting
+	    BTsettings = maplist(map<string,any> d, BTsettings, ``{
+		    if (d["service"]:"" == current)
+		    {
+			map<string,any> result = DaemonExpertPopup(current, d["args"]:"");
+
+			if (result["ret"]:nil == `ok)
+			{
+			    string arg = result["text"]:"";
+
+			    pand_changed = (d["service"]:"" == "PAND" && d["args"]:"" != arg);
+
+			    d["args"] = arg;
+			}
+		    }
+
+		    return d;
+		}
+	    );
+
+	    if (pand_changed)
+	    {
+		// update table content (PAND mode has been changed)
+		table = CreateDaemonTableTerm(BTsettings, daemon_descriptions);
+		UI::ChangeWidget(`id(`daemons), `Items, table);
+		UI::ChangeWidget(`id(`daemons), `CurrentItem, current);
+	    }
 	}
         else {
             y2error("unexpected retcode: %1", ret);
@@ -228,6 +374,10 @@ symbol DaemonDialog () {
     return ret;
 }
 
+void RefreshSecurityWidgets() {
+    boolean enable = (boolean) UI::QueryWidget(`id(`auth), `Value);
+    UI::ChangeWidget(`id(`encrypt), `Enabled, enable);
+}
 
 /**
  * Dialog for configuration bluetooth daemons.
@@ -247,9 +397,9 @@ symbol SecurityDialog () {
 	    `Frame(_("Authentification and Encryption"),
 		`VBox(
 		    `VSpacing(0.2),
-		    `Left(`CheckBox(`id(`auth), _("&Enable Authentification"))),
+		    `Left(`CheckBox(`id(`auth), `opt(`notify), _("&Enable Authentification"), Bluetooth::authentification)),
 		    `VSpacing(0.5),
-		    `Left(`CheckBox(`id(`encrypt), _("Enable En&cryption"))),
+		    `Left(`CheckBox(`id(`encrypt), _("Enable En&cryption"), Bluetooth::encryption)),
 		    `VSpacing(0.2)
 		)
 	    ),
@@ -257,9 +407,9 @@ symbol SecurityDialog () {
 	    `Frame(_("Scan Options"),
 		`VBox(
 		    `VSpacing(0.2),
-		    `Left(`CheckBox(`id(`inq), _("Enable &Inquiry Scan"))),
+		    `Left(`CheckBox(`id(`inq), _("Enable &Inquiry Scan"), Bluetooth::inquiry_scan)),
 		    `VSpacing(0.5),
-		    `Left(`CheckBox(`id(`page), _("Enable &Page Scan"))),
+		    `Left(`CheckBox(`id(`page), _("Enable &Page Scan"), Bluetooth::page_scan)),
 		    `VSpacing(0.2)
 		)
 	    ),
@@ -273,6 +423,8 @@ symbol SecurityDialog () {
 
     symbol ret = nil;
 
+    RefreshSecurityWidgets();
+
     while (true) {
 	ret = (symbol) UI::UserInput();
 
@@ -281,16 +433,20 @@ symbol SecurityDialog () {
 	    if (ReallyAbort()) break;
 	    else continue;
 	}
-	else if (ret == `enable || ret == `disable)
-	{
-	    // TODO handle buttons
-	}
-        else if (ret == `next || ret == `back) {
+        else if (ret == `back) {
             break;
         }
-	else if (ret == `expert)
+	else if (ret == `next)
 	{
-	    DaemonExpertPopup("HCID", "-a -b -c");
+	    Bluetooth::authentification = (boolean) UI::QueryWidget(`id(`auth), `Value);
+	    Bluetooth::encryption = (boolean) UI::QueryWidget(`id(`encrypt), `Value);
+	    Bluetooth::inquiry_scan = (boolean) UI::QueryWidget(`id(`inq), `Value);
+	    Bluetooth::page_scan = (boolean) UI::QueryWidget(`id(`page), `Value);
+	    break;
+	}
+	else if (ret == `auth)
+	{
+	    RefreshSecurityWidgets();
 	}
         else {
             y2error("unexpected retcode: %1", ret);

@@ -18,6 +18,7 @@ textdomain "bluetooth";
 import "Progress";
 import "Report";
 import "Summary";
+import "Service";
 
 /**
  * Prototypes
@@ -67,88 +68,96 @@ global boolean Modified() {
 }
 
 
+// global bluetooth setting
 global boolean enabled = false;
 
+// is authentification enabled?
 global boolean authentification = false;
 
+// is encryption enabled?
 global boolean encryption = false;
 
+// can other detect bluetooth devices?
+global boolean inquiry_scan = false;
+
+// can other connect to bluetooth devices?
+global boolean page_scan = false;
+
+// bluetooth daemons configarion
 global list<map<string,any> > daemons = [];
 
+// PIN number
 global string pin = "";
+
+
+define list<string> detect_services(list<string> all) ``{
+    list<string> ret = [];
+
+    if (all != nil && size(all) > 0)
+    {
+	foreach(string var, all, ``{
+		if (regexpmatch(var, ".*_START$"))
+		{
+		    string daemon_name = regexpsub(var, "(.*)_START$", "\\1");
+		    ret = add(ret, daemon_name);
+		}
+	    }
+	);
+    }
+
+    return ret;
+}
 
 /**
  * Read all bluetooth settings
  * @return true on success
  */
 global boolean Read() {
+    // read sysconfig settings
+    // read global setting
+    enabled = (SCR::Read(.sysconfig.bluetooth.START_SERVICES) == "yes");
+    y2milestone("bluetooth enabled: %1", enabled);
 
-    /* Bluetooth read dialog caption */
-    string caption = _("Initializing bluetooth Configuration");
+    // search for all daemon variables
+    list<string> dir = (list<string>) SCR::Dir(.sysconfig.bluetooth);
+    y2debug("detected variables: %1", dir);
 
-    // TODO FIXME Set the right number of stages
-    integer steps = 4;
+    list<string> detected_services = detect_services(dir);
+    y2debug("detected services: %1", detected_services);
 
-    integer sl = 0;
-    sleep(sl);
+    foreach(string service, detected_services, ``{
+	    // read start status
+	    boolean service_enabled = (SCR::Read(.sysconfig.bluetooth + (service + "_START")) == "yes");
 
-    // TODO FIXME Names of real stages
-    // We do not set help text here, because it was set outside
-    Progress::New( caption, " ", steps, [
-	    /* Progress stage 1/3 */
-	    _("Read the database"),
-	    /* Progress stage 2/3 */
-	    _("Read the previous settings"),
-	    /* Progress stage 3/3 */
-	    _("Detect the devices")
-	], [
-	    /* Progress step 1/3 */
-	    _("Reading the database..."),
-	    /* Progress step 2/3 */
-	    _("Reading the previous settings..."),
-	    /* Progress step 3/3 */
-	    _("Detecting the devices..."),
-	    /* Progress finished */
-	    _("Finished")
-	],
-	""
+	    // read path to daemon binary
+	    string binary = (string)SCR::Read(.sysconfig.bluetooth + (service + "_DAEMON"));
+
+	    // read daemon arguments
+	    string args = (string)SCR::Read(.sysconfig.bluetooth + (service + "_DAEMON_ARGS"));
+
+	    daemons = add(daemons, $[ "service" : service, "enabled" : service_enabled,
+		"daemon" : binary, "args" : args ]);
+	}
     );
+    y2milestone("configuration of daemons: %1", daemons);
 
-    // read database
-    if(Abort()) return false;
-    Progress::NextStage();
-    /* Error message */
-    if(false) Report::Error(_("Cannot read the database1."));
-    sleep(sl);
+    // read hcid.conf settings
+    // read security settings
+    authentification = (SCR::Read(.bluetooth.hcid.value.device.auth) == ["enable"]);
+    y2milestone("authentification: %1", authentification);
+    encryption= (SCR::Read(.bluetooth.hcid.value.device.encrypt) == ["enable"]);
+    y2milestone("encryption: %1", encryption);
 
-    // read another database
-    if(Abort()) return false;
-    Progress::NextStep();
-    /* Error message */
-    if(false) Report::Error(_("Cannot read the database2."));
-    sleep(sl);
+    // read scan settings
+    inquiry_scan = (SCR::Read(.bluetooth.hcid.value.device.iscan) == ["enable"]);
+    y2milestone("inquiry_scan: %1", inquiry_scan);
+    page_scan = (SCR::Read(.bluetooth.hcid.value.device.pscan) == ["enable"]);
+    y2milestone("page_scan: %1", page_scan);
 
-    // read current settings
-    if(Abort()) return false;
-    Progress::NextStage();
-    /* Error message */
-    if(false) Report::Error(_("Cannot read current settings."));
-    sleep(sl);
+    // read PIN
+    list<string> p = splitstring((string)SCR::Read(.target.string, "/etc/bluetooth/pin"), "\n");
+    pin = p[0]:"";
 
-    // detect devices
-    if(Abort()) return false;
-    Progress::NextStage();
-    /* Error message */
-    if(false) Report::Warning(_("Cannot detect devices."));
-    sleep(sl);
-
-    if(Abort()) return false;
-    /* Progress finished */
-    Progress::NextStage();
-    sleep(sl);
-
-    if(Abort()) return false;
-    modified = false;
     return true;
 }
 
@@ -159,26 +168,21 @@ global boolean Read() {
 global boolean Write() {
 
     /* Bluetooth read dialog caption */
-    string caption = _("Saving bluetooth Configuration");
+    string caption = _("Saving Bluetooth Configuration");
 
-    // TODO FIXME And set the right number of stages
     integer steps = 2;
 
-    integer sl = 0;
-    sleep(sl);
-
-    // TODO FIXME Names of real stages
     // We do not set help text here, because it was set outside
     Progress::New(caption, " ", steps, [
 	    /* Progress stage 1/2 */
 	    _("Write the settings"),
 	    /* Progress stage 2/2 */
-	    _("Run SuSEconfig")
+	    _("Restart Bluetooth Service")
 	], [
 	    /* Progress step 1/2 */
 	    _("Writing the settings..."),
 	    /* Progress step 2/2 */
-	    _("Running SuSEconfig..."),
+	    _("Restarting Bluetooth Service..."),
 	    /* Progress finished */
 	    _("Finished")
 	],
@@ -186,36 +190,71 @@ global boolean Write() {
     );
 
     // write settings
-    if(Abort()) return false;
     Progress::NextStage();
-    /* Error message */
-    if(false) Report::Error (_("Cannot write settings."));
-    sleep(sl);
 
-    // run SuSEconfig
+    // write global settings
+    SCR::Write(.sysconfig.bluetooth.START_SERVICES, (enabled) ? "yes" : "no");
+
+    // write daemon settings
+    foreach(map<string,any> d, daemons, ``{
+	    SCR::Write(.sysconfig.bluetooth + ((d["service"]:"") + "_START"), d["enabled"]:false ? "yes" : "no");
+	    SCR::Write(.sysconfig.bluetooth + ((d["service"]:"") + "_DAEMON_ARGS"), d["args"]:"");
+	}
+    );
+
+    // write hcid.conf settings
+    SCR::Write(.bluetooth.hcid.value.device.auth, [authentification ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.device.encrypt, [encryption ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.device.iscan, [inquiry_scan ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.device.pscan, [page_scan ? "enable" : "disable"]);
+
+    // write PIN
+    SCR::Write(.target.string, "/etc/bluetooth/pin", pin);
+
+    // flush changes
+    SCR::Write(.bluetooth.hcid, nil);
+    SCR::Write(.sysconfig.bluetooth, nil);
+
+
     if(Abort()) return false;
     Progress::NextStage ();
     /* Error message */
-    if(false) Report::Error (_("SuSEconfig script failed."));
-    sleep(sl);
 
-    if(Abort()) return false;
+    // activate bluetooth service if needed
+    if (enabled && !Service::Enabled("bluetooth"))
+    {
+	y2milestone("Enabling bluetooth service...");
+	boolean res = Service::Enable("bluetooth");
+	y2milestone("Enabled: %1", res);
+    }
+
+    // restart service
+    if (!write_only)
+    {
+	Service::Restart("bluetooth");
+    }
+
     /* Progress finished */
     Progress::NextStage();
-    sleep(sl);
 
-    if(Abort()) return false;
     return true;
 }
 
 /**
- * Get all bluetooth settings from the first parameter
+ * Get all bluetooth settings from map
  * (For use by autoinstallation.)
- * @param settings The YCP structure to be imported.
+ * @param settings map to be imported.
  * @return boolean True on success
  */
 global boolean Import (map settings) {
-    // TODO FIXME: your code here (fill the above mentioned variables)...
+    enabled = settings["enabled"]:false;
+    authentification = settings["authentification"]:false;
+    encryption = settings["encryption"]:false;
+    inquiry_scan = settings["inquiry_scan"]:false;
+    page_scan = settings["page_scan"]:false;
+    daemons = settings["daemons"]:[];
+    pin = settings["pin"]:"";
+
     return true;
 }
 
@@ -225,28 +264,56 @@ global boolean Import (map settings) {
  * @return map Dumped settings (later acceptable by Import ())
  */
 global map Export () {
-    // TODO FIXME: your code here (return the above mentioned variables)...
-    return $[];
+    return $[
+	"enabled" : enabled,
+	"authentification" : authentification,
+	"encryption" : encryption,
+	"inquiry_scan" : inquiry_scan,
+	"page_scan" : page_scan,
+	"daemons" : daemons,
+	"pin" : pin
+    ];
 }
 
 /**
- * Create a textual summary and a list of unconfigured cards
+ * Create a textual summary of configuration
  * @return summary of the current configuration
  */
-global list Summary() {
-    // TODO FIXME: your code here...
-    /* Configuration summary text for autoyast */
-    return [ _("Configuration summary ..."), [] ];
+global list<string> Summary() {
+    /* Configuration summary text */
+
+    // status string
+    string status = (enabled) ? _("Enabled") : _("Disabled");
+
+    list<string> ret = [ status ];
+
+    if (enabled)
+    {
+	// add list of enabled services
+	string enabled_daemons = "";
+
+	foreach(map<string,any> d, daemons, ``{
+		string dname = d["service"]:"";
+
+		if (d["enabled"]:false == true)
+		{
+		    if (enabled_daemons != "")
+		    {
+			enabled_daemons = enabled_daemons + ", ";
+		    }
+
+		    enabled_daemons = enabled_daemons + dname;
+		}
+	    }
+	);
+
+	// status string, %1 is replaced by list of daemons (e.g. "HCI, SDP, PAND")
+	sformat(_("Started services: %1)"), enabled_daemons);
+    }
+
+    return ret;
 }
 
-/**
- * Create an overview table with all configured cards
- * @return table items
- */
-global list Overview() {
-    // TODO FIXME: your code here...
-    return [];
-}
 
 /**
  * Return packages needed to be installed and removed during
@@ -255,7 +322,6 @@ global list Overview() {
  * @return map with 2 lists.
  */
 global map AutoPackages() {
-    // TODO FIXME: your code here...
     return $[ "install":[], "remove":[] ];
 }
 
