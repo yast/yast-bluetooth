@@ -220,15 +220,6 @@ global boolean Write() {
 
     if(Abort()) return false;
     Progress::NextStage ();
-    /* Error message */
-
-    // activate bluetooth service if needed
-    if (enabled && !Service::Enabled("bluetooth"))
-    {
-	y2milestone("Enabling bluetooth service...");
-	boolean res = Service::Enable("bluetooth");
-	y2milestone("Enabled: %1", res);
-    }
 
     // restart service
     if (!write_only)

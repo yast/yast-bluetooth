@@ -37,7 +37,7 @@ when the Bluetooth system is starts in <B>Advanced Daemon Configuration<B>.</P>
 
     /* Help text for global settings dialog 4/4*/
 _("<P>Some devices require a PIN for identification. Usually this is a four or
-five digit number. If no PIN is required, choose '00000'.</P>
+five digit number. If no PIN is required, choose '0000'.</P>
 "),
 
 
@@ -130,7 +130,7 @@ map<string,string> daemon_descriptions = $[
     // HID daemon description
     "HID"	: _("Input device support (keyboard, mouse)"),
     // HID2HCI daemon description
-    "HID2HCI"	: _("Use HID device in HCID mode")
+    "HID2HCI"	: _("Use HID device in HCI mode")
 ];
 
 /* EOF */

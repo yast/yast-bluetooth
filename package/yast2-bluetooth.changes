@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug 16 14:52:22 CEST 2004 - lslezak@suse.cz
+
+- don't check whether bluetooth service is enabled
+- fixed typo in description - HCI instead of HCID (#43597)
+- fixed recommended default PIN (set to '0000') (#43596)
+- version 2.10.2
+
+-------------------------------------------------------------------
 Tue Aug 10 09:40:31 CEST 2004 - jsrain@suse.cz
 
 - merged texts from proofread
