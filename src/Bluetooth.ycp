@@ -117,6 +117,12 @@ define list<string> detect_services(list<string> all) ``{
  * @return true on success
  */
 global boolean Read() {
+    // %1 is a package name (bluez-utils)
+    if (Require::RequireAndConflict(required_packages, [], _("Package %1 will be installed.")) == false)
+    {
+	return false;
+    }
+
     // read sysconfig settings
     // read global setting
     enabled = (SCR::Read(.sysconfig.bluetooth.START_SERVICES) == "yes");
@@ -197,15 +203,6 @@ global boolean Write() {
 
     // write settings
     Progress::NextStage();
-
-    if (enabled)
-    {
-	// %1 is a package name (bluez-utils)
-	if (Require::RequireAndConflict(required_packages, [], _("Package %1 will be installed.")) == false)
-	{
-	    return false;
-	}
-    }
 
     // write global settings
     SCR::Write(.sysconfig.bluetooth.START_SERVICES, (enabled) ? "yes" : "no");
