@@ -20,6 +20,7 @@ import "Report";
 import "Summary";
 import "Service";
 import "Require";
+import "Confirm";
 
 /**
  * Prototypes
@@ -293,8 +294,13 @@ global map Export () {
 global void Propose() {
     // was detected bluetooth adapter?
     boolean detected = false;
+    list<map> bt_adapters = [];
 
-    list<map> bt_adapters = (list<map>)SCR::Read(.probe.bluetooth);
+    // ask for confirmation, the text (hardware class) is displayed below header "YaST2 will detect the following hardware:"
+    if (Confirm::Detection(_("Bluetooth Adapter")))
+    {
+	bt_adapters = (list<map>)SCR::Read(.probe.bluetooth);
+    }
 
     if (bt_adapters != nil && size(bt_adapters) > 0)
     {
