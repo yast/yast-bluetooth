@@ -81,16 +81,16 @@ symbol GlobalOptionsDialog () {
 			`RadioButtonGroup(`id(`rbg),
 			    `VBox(
 				`VSpacing(0.3),
-				`Left(`RadioButton(`id(`sm_none), `opt(`notify), _("&Security manager disabled"), Bluetooth::security_manager == "none")),
+				`Left(`RadioButton(`id(`sm_none), `opt(`notify), _("&Security Manager Disabled"), Bluetooth::security_manager == "none")),
 				`VSpacing(0.5),
-				`Left(`RadioButton(`id(`sm_auto), `opt(`notify), _("Use local &PIN for incoming connections"), Bluetooth::security_manager == "auto")),
+				`Left(`RadioButton(`id(`sm_auto), `opt(`notify), _("Use Local &PIN for Incoming Connections"), Bluetooth::security_manager == "auto")),
 				    `HBox(
 					`HSpacing(3),
 					`Password(`id(`pin), _("I&dentification Number (PIN)"), Bluetooth::pin),
 					`HSpacing(1)
 				    ),
 				`VSpacing(0.5),
-				`Left(`RadioButton(`id(`sm_user), `opt(`notify), _("Always ask &user for a PIN"), Bluetooth::security_manager == "user")),
+				`Left(`RadioButton(`id(`sm_user), `opt(`notify), _("Always Ask &User for a PIN"), Bluetooth::security_manager == "user")),
 				`VSpacing(0.4)
 			    )
 			)
@@ -546,21 +546,21 @@ symbol ClassDialog () {
 	//`item(`id(`computer_desktop), _("No Service Class Associated"), Bluetooth::service_class == 0x104),
     list<term> service_list = [
 	// service class name and description
-	`item(`id(0x010000), _("Positioning (Location identification)"),		(Bluetooth::service_class & 0x010000) == 0x010000),
+	`item(`id(0x010000), _("Positioning (Location Identification)"),		(Bluetooth::service_class & 0x010000) == 0x010000),
 	// service class name and description
-	`item(`id(0x020000), _("Networking (LAN, Ad hoc, ...)"),			(Bluetooth::service_class & 0x020000) == 0x020000),
+	`item(`id(0x020000), _("Networking (LAN, Ad Hoc, etc.)"),			(Bluetooth::service_class & 0x020000) == 0x020000),
 	// service class name and description
-	`item(`id(0x040000), _("Rendering (Printing, Speaker, ...)"),			(Bluetooth::service_class & 0x040000) == 0x040000),
+	`item(`id(0x040000), _("Rendering (Printing, Speaker, etc.)"),			(Bluetooth::service_class & 0x040000) == 0x040000),
 	// service class name and description
-	`item(`id(0x080000), _("Capturing (Scanner, Microphone, ...)"),			(Bluetooth::service_class & 0x080000) == 0x080000),
+	`item(`id(0x080000), _("Capturing (Scanner, Microphone, etc.)"),			(Bluetooth::service_class & 0x080000) == 0x080000),
 	// service class name and description
-	`item(`id(0x100000), _("Object Transfer (v-Inbox, v-Folder, ...)"),		(Bluetooth::service_class & 0x100000) == 0x100000),
+	`item(`id(0x100000), _("Object Transfer (v-Inbox, v-Folder, etc.)"),		(Bluetooth::service_class & 0x100000) == 0x100000),
 	// service class name and description
-	`item(`id(0x200000), _("Audio (Speaker, Microphone, Headset service, ...)"),	(Bluetooth::service_class & 0x200000) == 0x200000),
+	`item(`id(0x200000), _("Audio (Speaker, Microphone, Headset Service, etc.)"),	(Bluetooth::service_class & 0x200000) == 0x200000),
 	// service class name and description
-	`item(`id(0x400000), _("Telephony (Cordless telephony, Modem, Headset service, ...)"), (Bluetooth::service_class & 0x400000) == 0x400000),
+	`item(`id(0x400000), _("Telephony (Cordless Telephony, Modem, Headset Service, etc.)"), (Bluetooth::service_class & 0x400000) == 0x400000),
 	// service class name and description
-	`item(`id(0x800000), _("Information (WEB-server, WAP-server, ...)"),		(Bluetooth::service_class & 0x800000) == 0x800000),
+	`item(`id(0x800000), _("Information (Web Server, WAP Server, etc.)"),		(Bluetooth::service_class & 0x800000) == 0x800000),
     ];
 
     /* Bluetooth configuration dialog content */
