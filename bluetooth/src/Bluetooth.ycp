@@ -1,0 +1,432 @@
+/**
+ * File:	modules/Bluetooth.ycp
+ * Package:	Configuration of bluetooth
+ * Summary:	Bluetooth settings, input and output functions
+ * Authors:	Ladislav Slezak <lslezak@suse.cz>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of bluetooth devices.
+ * Input and output routines.
+ */
+
+{
+
+module "Bluetooth";
+textdomain "bluetooth";
+
+import "Progress";
+import "Report";
+import "Summary";
+import "Service";
+import "Require";
+import "Confirm";
+
+/**
+ * Prototypes
+ */
+global boolean Modified();
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
+ */
+global boolean proposal_valid = false;
+
+global boolean config_read = false;
+
+/**
+ * Write only, used during autoinstallation.
+ * Don't run services and SuSEconfig, it's all done at one place.
+ */
+global boolean write_only = false;
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global boolean() AbortFunction = Modified;
+
+/**
+ * Abort function
+ * @return boolean return true if abort
+ */
+global define boolean Abort() ``{
+    if(AbortFunction != nil)
+    {
+	return AbortFunction () == true;
+    }
+    return false;
+}
+
+// list of required packages (installed at Write)
+list<string> required_packages = ["bluez-utils"];
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global boolean Modified() {
+    y2debug("modified=%1",modified);
+    return modified;
+}
+
+
+// global bluetooth setting
+global boolean enabled = false;
+
+// is authentification enabled?
+global boolean authentification = false;
+
+// is encryption enabled?
+global boolean encryption = false;
+
+// can other detect bluetooth devices?
+global boolean inquiry_scan = false;
+
+// can other connect to bluetooth devices?
+global boolean page_scan = false;
+
+// bluetooth daemons configarion
+global list<map<string,any> > daemons = [];
+
+// PIN number
+global string pin = "";
+
+// security manager mode - PIN management
+global string security_manager = "auto";
+
+// local device name (%h is hostname, %d is device ID)
+global string device_name = "BlueZ %h (%d)";
+
+global integer device_class = 0x100;
+
+global integer service_class = 0x100000;
+
+define list<string> detect_services(list<string> all) ``{
+    list<string> ret = [];
+
+    if (all != nil && size(all) > 0)
+    {
+	foreach(string var, all, ``{
+		if (regexpmatch(var, ".*_START$"))
+		{
+		    string daemon_name = regexpsub(var, "(.*)_START$", "\\1");
+		    ret = add(ret, daemon_name);
+		}
+	    }
+	);
+    }
+
+    return ret;
+}
+
+global define boolean InstallPackages() {
+    // %1 is a package name (bluez-utils)
+    return Require::RequireAndConflict(required_packages, [], _("Package %1 will be installed."));
+}
+/**
+ * Read all bluetooth settings
+ * @return true on success
+ */
+global boolean Read() {
+    // read sysconfig settings
+    // read global setting
+    enabled = (SCR::Read(.sysconfig.bluetooth.START_SERVICES) == "yes");
+    y2milestone("bluetooth enabled: %1", enabled);
+
+    // search for all daemon variables
+    list<string> dir = (list<string>) SCR::Dir(.sysconfig.bluetooth);
+    y2debug("detected variables: %1", dir);
+
+    list<string> detected_services = detect_services(dir);
+    y2debug("detected services: %1", detected_services);
+
+    // reset daemon list
+    daemons = [];
+    foreach(string service, detected_services, ``{
+	    // read start status
+	    boolean service_enabled = (SCR::Read(.sysconfig.bluetooth + (service + "_START")) == "yes");
+
+	    // read path to daemon binary
+	    string binary = (string)SCR::Read(.sysconfig.bluetooth + (service + "_DAEMON"));
+
+	    // read daemon arguments
+	    string args = (string)SCR::Read(.sysconfig.bluetooth + (service + "_DAEMON_ARGS"));
+
+	    daemons = add(daemons, $[ "service" : service, "enabled" : service_enabled,
+		"daemon" : binary, "args" : args ]);
+	}
+    );
+    y2milestone("configuration of daemons: %1", daemons);
+
+    // read hcid.conf settings
+    // read security settings
+    authentification = (SCR::Read(.bluetooth.hcid.value.device.auth) == ["enable"]);
+    y2milestone("authentification: %1", authentification);
+    encryption= (SCR::Read(.bluetooth.hcid.value.device.encrypt) == ["enable"]);
+    y2milestone("encryption: %1", encryption);
+
+    // read scan settings
+    inquiry_scan = (SCR::Read(.bluetooth.hcid.value.device.iscan) == ["enable"]);
+    y2milestone("inquiry_scan: %1", inquiry_scan);
+    page_scan = (SCR::Read(.bluetooth.hcid.value.device.pscan) == ["enable"]);
+    y2milestone("page_scan: %1", page_scan);
+
+    security_manager = ((list<string>)SCR::Read(.bluetooth.hcid.value.options.security))[0]:"auto";
+    y2milestone("security_manager: %1", security_manager);
+    device_name = ((list<string>)SCR::Read(.bluetooth.hcid.value.device.name))[0]:"\"BlueZ %h (%d)\"";
+
+    // remove leading and trailing double quotes
+    string device_name_parsed = regexpsub(device_name, "^\"(.*)\"$", "\\1");
+    if (device_name_parsed != nil)
+    {
+	device_name = device_name_parsed;
+    }
+    y2milestone("device_name: %1", device_name);
+
+    // read device and service class
+    string class_str = ((list<string>)SCR::Read(.bluetooth.hcid.value.device.class))[0]:"0x100100";
+    y2milestone("class_str: %1", class_str);
+    integer class = tointeger(class_str);
+
+    device_class = class & 0xFFF;
+    y2milestone("device_class: %1", tohexstring(device_class));
+    service_class = class & ~0xFFF;
+    y2milestone("service_class: %1", tohexstring(service_class));
+
+
+    // read PIN
+    list<string> p = splitstring((string)SCR::Read(.target.string, "/etc/bluetooth/pin"), "\n");
+    pin = p[0]:"";
+
+    return true;
+}
+
+/**
+ * Write all bluetooth settings
+ * @return true on success
+ */
+global boolean Write() {
+
+    /* Bluetooth read dialog caption */
+    string caption = _("Saving Bluetooth Configuration");
+
+    integer steps = 2;
+
+    // We do not set help text here, because it was set outside
+    Progress::New(caption, " ", steps, [
+	    /* Progress stage 1/2 */
+	    _("Write the settings"),
+	    /* Progress stage 2/2 */
+	    _("Restart Bluetooth service")
+	], [
+	    /* Progress step 1/2 */
+	    _("Writing the settings..."),
+	    /* Progress step 2/2 */
+	    _("Restarting Bluetooth service..."),
+	    /* Progress finished */
+	    _("Finished")
+	],
+	""
+    );
+
+    // write settings
+    Progress::NextStage();
+
+    // write global settings
+    SCR::Write(.sysconfig.bluetooth.START_SERVICES, (enabled) ? "yes" : "no");
+
+    // write daemon settings
+    foreach(map<string,any> d, daemons, ``{
+	    SCR::Write(.sysconfig.bluetooth + ((d["service"]:"") + "_START"), d["enabled"]:false ? "yes" : "no");
+	    SCR::Write(.sysconfig.bluetooth + ((d["service"]:"") + "_DAEMON_ARGS"), d["args"]:"");
+	}
+    );
+
+    // write hcid.conf settings
+    SCR::Write(.bluetooth.hcid.value.device.auth, [authentification ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.device.encrypt, [encryption ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.device.iscan, [inquiry_scan ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.device.pscan, [page_scan ? "enable" : "disable"]);
+    SCR::Write(.bluetooth.hcid.value.options.security, [security_manager]);
+
+    // save device name
+    string device_name_save = device_name;
+    if (!regexpmatch(device_name_save, "^\""))
+    {
+	device_name_save = "\"" + device_name_save;
+    }
+    if (!regexpmatch(device_name_save, "\"$"))
+    {
+	device_name_save = device_name_save + "\"";
+    }
+    SCR::Write(.bluetooth.hcid.value.device.name, [device_name_save]);
+
+    // write class settings
+    string class_str = tohexstring(device_class + service_class);
+    SCR::Write(.bluetooth.hcid.value.device.class, [class_str]);
+
+    // write PIN
+    SCR::Write(.target.string, "/etc/bluetooth/pin", pin);
+
+    // flush changes
+    SCR::Write(.bluetooth.hcid, nil);
+    SCR::Write(.sysconfig.bluetooth, nil);
+
+
+    if(Abort()) return false;
+    Progress::NextStage ();
+
+    // restart service
+    if (!write_only)
+    {
+	// activate changes
+	if (enabled)
+	{
+	    // restart service if it's running
+	    if (Service::Status("bluetooth") == 0)
+	    {
+		Service::Restart("bluetooth");
+	    }
+	}
+	else
+	{
+	    Service::Stop("bluetooth");
+	}
+    }
+
+    /* Progress finished */
+    Progress::NextStage();
+
+    return true;
+}
+
+/**
+ * Get all bluetooth settings from map
+ * (For use by autoinstallation.)
+ * @param settings map to be imported.
+ * @return boolean True on success
+ */
+global boolean Import (map settings) {
+    enabled = settings["enabled"]:false;
+    authentification = settings["authentification"]:false;
+    encryption = settings["encryption"]:false;
+    inquiry_scan = settings["inquiry_scan"]:false;
+    page_scan = settings["page_scan"]:false;
+    daemons = settings["daemons"]:[];
+    pin = settings["pin"]:"";
+
+    return true;
+}
+
+/**
+ * Dump the bluetooth settings to a single map
+ * (For use by autoinstallation.)
+ * @return map Dumped settings (later acceptable by Import ())
+ */
+global map Export () {
+    return $[
+	"enabled" : enabled,
+	"authentification" : authentification,
+	"encryption" : encryption,
+	"inquiry_scan" : inquiry_scan,
+	"page_scan" : page_scan,
+	"daemons" : daemons,
+	"pin" : pin
+    ];
+}
+
+global void Propose() {
+    // was detected bluetooth adapter?
+    boolean detected = false;
+    list<map> bt_adapters = [];
+
+    // ask for confirmation, the text (hardware class) is displayed below header "YaST2 will detect the following hardware:"
+    if (Confirm::Detection(_("Bluetooth Adapter")))
+    {
+	bt_adapters = (list<map>)SCR::Read(.probe.bluetooth);
+    }
+
+    if (bt_adapters != nil && size(bt_adapters) > 0)
+    {
+	detected = true;
+
+	foreach(map dev, bt_adapters, {
+		string model = dev["model"]:"";
+		y2milestone("Found Blutooth device: %1", model);
+	    }
+	);
+    }
+    else
+    {
+	y2milestone("No Bluetooth device detected");
+    }
+
+    // set enabled/disabled status depending on found bluetooth adapters
+    enabled = detected;
+}
+
+/**
+ * Create a textual summary of configuration
+ * @return summary of the current configuration
+ */
+global string Summary() {
+    /* Configuration summary text */
+
+    // status string
+    string status = (enabled) ? _("Enabled") : _("Disabled");
+
+    string ret = sformat("<ul><li>%1</li>", status);
+
+    if (enabled)
+    {
+	// add list of enabled services
+	string enabled_daemons = "";
+
+	foreach(map<string,any> d, daemons, ``{
+		string dname = d["service"]:"";
+
+		if (d["enabled"]:false == true)
+		{
+		    if (enabled_daemons != "")
+		    {
+			enabled_daemons = enabled_daemons + ", ";
+		    }
+
+		    enabled_daemons = enabled_daemons + dname;
+		}
+	    }
+	);
+
+	if (enabled_daemons == "")
+	{
+	    // no daemon is enabled, appended to string "Started services: "
+	    enabled_daemons = _("<I>None</I>");
+	}
+
+	// status string, %1 is replaced by list of daemons (e.g. "HCI, SDP, PAND") or "none"
+	ret = ret + sformat(_("<li>Started services: %1</li>"), enabled_daemons);
+    }
+
+    ret = ret + "</ul>";
+
+    return ret;
+}
+
+
+/**
+ * Return packages needed to be installed and removed during
+ * Autoinstallation to insure module has all needed software
+ * installed.
+ * @return map with 2 lists.
+ */
+global map AutoPackages() {
+    return $[ "install":[], "remove":[] ];
+}
+
+/* EOF */
+}
