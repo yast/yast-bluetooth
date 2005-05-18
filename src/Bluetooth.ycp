@@ -409,7 +409,7 @@ global string Summary() {
 	}
 
 	// status string, %1 is replaced by list of daemons (e.g. "HCI, SDP, PAND") or "none"
-	ret = ret + sformat(_("<li>Started services: %1</li>"), enabled_daemons);
+	ret = ret + sformat(_("<li>Started Services: %1</li>"), enabled_daemons);
     }
 
     ret = ret + "</ul>";

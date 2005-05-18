@@ -81,7 +81,7 @@ symbol GlobalOptionsDialog () {
 			`RadioButtonGroup(`id(`rbg),
 			    `VBox(
 				`VSpacing(0.3),
-				`Left(`RadioButton(`id(`sm_none), `opt(`notify), _("&Security Manager Disabled"), Bluetooth::security_manager == "none")),
+				`Left(`RadioButton(`id(`sm_none), `opt(`notify), _("Di&sabled"), Bluetooth::security_manager == "none")),
 				`VSpacing(0.5),
 				`Left(`RadioButton(`id(`sm_auto), `opt(`notify), _("Use Local &PIN for Incoming Connections"), Bluetooth::security_manager == "auto")),
 				    `HBox(
@@ -340,7 +340,7 @@ symbol DaemonDialog () {
 
     /* Bluetooth configuration dialog content */
     term contents = `VBox(
-	`Left(`Label(_("Current Available Daemons:"))),
+	`Left(`Label(_("Currently Available Daemons"))),
 	`Table(`id(`daemons), `header(_("Daemon"), _("Enabled"), _("Description")), table),
 	`VSpacing(0.5),
 	`HBox(
@@ -458,9 +458,9 @@ symbol SecurityDialog () {
 	    `Frame(_("Authentication and Encryption"),
 		`VBox(
 		    `VSpacing(0.2),
-		    `Left(`CheckBox(`id(`auth), `opt(`notify), _("&Enable Authentication"), Bluetooth::authentification)),
+		    `Left(`CheckBox(`id(`auth), `opt(`notify), _("&Authentication"), Bluetooth::authentification)),
 		    `VSpacing(0.5),
-		    `Left(`CheckBox(`id(`encrypt), _("Enable En&cryption"), Bluetooth::encryption)),
+		    `Left(`CheckBox(`id(`encrypt), _("&Encryption"), Bluetooth::encryption)),
 		    `VSpacing(0.2)
 		)
 	    ),
@@ -468,9 +468,9 @@ symbol SecurityDialog () {
 	    `Frame(_("Scan Options"),
 		`VBox(
 		    `VSpacing(0.2),
-		    `Left(`CheckBox(`id(`inq), _("Enable &Inquiry Scan"), Bluetooth::inquiry_scan)),
+		    `Left(`CheckBox(`id(`inq), _("&Inquiry Scan"), Bluetooth::inquiry_scan)),
 		    `VSpacing(0.5),
-		    `Left(`CheckBox(`id(`page), _("Enable &Page Scan"), Bluetooth::page_scan)),
+		    `Left(`CheckBox(`id(`page), _("&Page Scan"), Bluetooth::page_scan)),
 		    `VSpacing(0.2)
 		)
 	    ),
@@ -534,13 +534,13 @@ symbol ClassDialog () {
 
     list<term> class_list = [
 	// combo box item - device class
-	`item(`id(0x100), _("Computer"), Bluetooth::device_class == 0x100),
+	`item(`id(0x100), _("General Computer"), Bluetooth::device_class == 0x100),
 	// combo box item - device class
-	`item(`id(0x104), _("Computer (Desktop)"), Bluetooth::device_class == 0x104),
+	`item(`id(0x104), _("Desktop"), Bluetooth::device_class == 0x104),
 	// combo box item - device class
-	`item(`id(0x108), _("Computer (Server)"), Bluetooth::device_class == 0x108),
+	`item(`id(0x108), _("Server"), Bluetooth::device_class == 0x108),
 	// combo box item - device class
-	`item(`id(0x10C), _("Computer (Laptop)"), Bluetooth::device_class == 0x10C)
+	`item(`id(0x10C), _("Laptop"), Bluetooth::device_class == 0x10C)
     ];
 
 	//`item(`id(`computer_desktop), _("No Service Class Associated"), Bluetooth::service_class == 0x104),

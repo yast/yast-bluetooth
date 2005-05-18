@@ -22,7 +22,7 @@ Please wait...<br></p>
 "),
 
     /* Help text for global settings dialog 1/6*/
-    "global" : _("<P><B>Configure Bluetooth Support</B></P>") +
+    "global" : _("<P><B>Configuring Bluetooth Support</B></P>") +
 
     /* Help text for global settings dialog 2/6*/
 _("<P>If you enable Bluetooth support, the Bluetooth system is started
@@ -34,7 +34,7 @@ computer.</P>
 _("<P><B>Device Name</B> is the name visible when remote devices ask for it.</P>") +
 
     /* Help text for global settings dialog 4/6*/
-_("<P>Assign which services (or <I>Profiles</I> as they are called in Bluetooth) are available
+_("<P>Assign which services (or <I>profiles</I> as they are called in Bluetooth) are available
 when the Bluetooth system starts in <B>Advanced Daemon Configuration<B>.</P>
 ") +
 
@@ -62,51 +62,51 @@ _("<P>In <B>Service Class</B>, select services offered by the computer to remote
     "daemon" : _("<P><B>Daemon Configuration</B></P>") +
 
     /* Help text for service configuration dialog 2/10 */
-_("<P>The daemons here provide various services. To change daemon
+_("<P>The daemons provide various services. To change daemon
 settings, press <B>Edit</B>.</P>
 ") +
 
     /* Help text for service configuration dialog 3/10 */
-_("<P><B>HCID</B> -- The host controller interface daemon manages all Bluetooth
+_("<P><B>HCID</B>: The host controller interface daemon manages all Bluetooth
 devices in your computer.</P>
 ") +
 
     /* Help text for service configuration dialog 4/10 */
-_("<P><B>SDPD</B> -- The service discovery protocol daemon is needed from remote devices to
+_("<P><B>SDPD</B>: The service discovery protocol daemon is needed from remote devices to
 find out which Bluetooth services are available on your computer. The other
 daemons connect to this one.</P>
 ") +
 
     /* Help text for service configuration dialog 5/10 */
 
-_("<P><B>OPD</B>--The OBEX push daemon is needed, for example, to transfer
+_("<P><B>OPD</B>: The OBEX push daemon is needed, for example, to transfer
 files from a device onto your computer. If you are using KDE or GNOME, do not
 activate the OPD daemon. It is only needed for other desktops and causes
 problems with KDE and GNOME.</P>\n") +
 
     /* Help text for service configuration dialog 6/10 */
-_("<P><B>RFCOMM</B> -- This is a serial cable emulation protocol needed for some devices and
+_("<P><B>RFCOMM</B>: This is a serial cable emulation protocol needed for some devices and
 services. It is not a 'real' daemon, but a process configuring the existing
 Bluetooth devices.</P>
 ") +
 
     /* Help text for service configuration dialog 7/10 */
-_("<P><B>PAND</B> -- The personal area network daemon is used to create
+_("<P><B>PAND</B>: The personal area network daemon is used to create
 networks using Bluetooth. It creates a kind of wireless ethernet network.</P>
 ") +
 
     /* Help text for service configuration dialog 8/10 */
-_("<P><B>DUND</B> -- The dial-up networking daemon allows LAN access over
+_("<P><B>DUND</B>: The dial-up networking daemon allows LAN access over
 PPP. You need it if you have a Bluetooth modem.</P>
 ") +
 
     /* Help text for service configuration dialog 9/10 */
-_("<P><B>HID</B> -- The human interface device profile is used for devices like
+_("<P><B>HID</B>: The human interface device profile is used for devices like
 keyboard and mouse.</P>
 ") +
 
     /* Help text for service configuration dialog 10/10 */
-_("<P><B>HID2HCI</B> -- This is actually not a 'real' daemon, but a help utility to switch
+_("<P><B>HID2HCI</B>: This is actually not a 'real' daemon, but a help utility for switching
 a HID adapter into HCI mode (or vice versa). Normally you should not need it.</P>
 "),
 
