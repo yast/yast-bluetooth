@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 22 15:07:32 CEST 2005 - lslezak@suse.cz
+
+- updated icon in .desktop file
+- 2.12.0
+
+-------------------------------------------------------------------
 Mon Mar  7 15:21:04 CET 2005 - lslezak@suse.cz
 
 - unmount sysconfig agent (reread sysconfig file again) -
