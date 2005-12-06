@@ -22,7 +22,7 @@ string YES = _("Yes");
 string NO = _("No");
 
 string listen = "--listen --role NAP";
-string search = "--search";
+string search_option = "--search_option";
 
 
 void RefreshGlobalWidgets() {
@@ -204,9 +204,9 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
 	    `VBox(
 		`Left(`RadioButton(`id(`listen), `opt(`notify), _("Set Network Daemon to &Listen Mode"), arguments_nows == listen)),
 		`VSpacing(0.2),
-		`Left(`RadioButton(`id(`search), `opt(`notify), _("Set Network Daemon to &Search Mode"), arguments_nows == search)),
+		`Left(`RadioButton(`id(`search), `opt(`notify), _("Set Network Daemon to &Search Mode"), arguments_nows == search_option)),
 		`VSpacing(0.2),
-		`Left(`RadioButton(`id(`other), `opt(`notify), _("&Other Settings"), arguments_nows != listen && arguments_nows != search))
+		`Left(`RadioButton(`id(`other), `opt(`notify), _("&Other Settings"), arguments_nows != listen && arguments_nows != search_option))
 	    )
 	)
     );
@@ -272,7 +272,7 @@ map<string,any> DaemonExpertPopup(string daemon, string arguments) {
 	}
 	else if (UI::QueryWidget(`id(`rbg), `CurrentButton) == `search)
 	{
-	    text = search;
+	    text = search_option;
 	}
 	else
 	{
@@ -308,7 +308,7 @@ list<term> CreateDaemonTableTerm(list<map<string,any> > daemons, map<string,stri
 			// the text is appended to description of PAND daemon
 			pand_mode = _(" (listen mode)");
 		    }
-		    else if (arguments_nows == search)
+		    else if (arguments_nows == search_option)
 		    {
 			// network daemon mode, space at the beginning is required
 			// the text is appended to description of PAND daemon
