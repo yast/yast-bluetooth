@@ -19,7 +19,7 @@ import "Progress";
 import "Report";
 import "Summary";
 import "Service";
-import "Require";
+import "Package";
 import "Confirm";
 
 /**
@@ -126,7 +126,7 @@ define list<string> detect_services(list<string> all) ``{
 
 global define boolean InstallPackages() {
     // %1 is a package name (bluez-utils)
-    return Require::RequireAndConflict(required_packages, [], _("Package %1 will be installed."));
+    return Package::InstallAllMsg (required_packages, _("Package %1 will be installed."));
 }
 /**
  * Read all bluetooth settings

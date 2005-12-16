@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Dec 16 15:59:21 CET 2005 - jsuchome@suse.cz
+
+- use Package instead of obsoleted Require
+- 2.13.1
+
+-------------------------------------------------------------------
 Tue Dec  6 14:07:19 CET 2005 - lslezak@suse.cz
 
 - renamed search variable
