@@ -19,6 +19,11 @@ desktop_DATA =			\
 module_DATA =			\
 	Bluetooth.ycp
 
+bluetooth:
+	ln -sf . bluetooth
+
+ycpchook = bluetooth
+
 EXTRA_DIST = $(client_DATA) $(ynclude_DATA) $(module_DATA) $(desktop_DATA)
 
 include $(top_srcdir)/Makefile.am.common

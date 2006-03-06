@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar  6 08:48:28 CET 2006 - lslezak@suse.cz
+
+- removed yast2-devel-packages macro from .spec file
+- hook in Makefile.am (fixed make package)
+- 2.13.2
+
+-------------------------------------------------------------------
 Fri Dec 16 15:59:21 CET 2005 - jsuchome@suse.cz
 
 - use Package instead of obsoleted Require
