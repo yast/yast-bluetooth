@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr  5 08:06:00 CEST 2006 - lslezak@suse.cz
+
+- fixed pand option ("--search" instead of "--search_option")
+  (#162799)
+- 2.13.3
+
+-------------------------------------------------------------------
 Mon Mar  6 08:48:28 CET 2006 - lslezak@suse.cz
 
 - removed yast2-devel-packages macro from .spec file

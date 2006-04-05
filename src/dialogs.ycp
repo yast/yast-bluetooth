@@ -22,7 +22,7 @@ string YES = _("Yes");
 string NO = _("No");
 
 string listen = "--listen --role NAP";
-string search_option = "--search_option";
+string search_option = "--search";
 
 
 void RefreshGlobalWidgets() {
