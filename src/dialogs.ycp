@@ -435,11 +435,6 @@ symbol DaemonDialog () {
     return ret;
 }
 
-void RefreshSecurityWidgets() {
-    boolean enable = (boolean) UI::QueryWidget(`id(`auth), `Value);
-    UI::ChangeWidget(`id(`encrypt), `Enabled, enable);
-}
-
 /**
  * Dialog for configuration bluetooth daemons.
  * @return symbol dialog result
@@ -454,17 +449,6 @@ symbol SecurityDialog () {
     term contents = `HBox(
 	`HSpacing(3),
 	`VBox(
-	    `VSpacing(1),
-	    `Frame(_("Authentication and Encryption"),
-		`VBox(
-		    `VSpacing(0.2),
-		    `Left(`CheckBox(`id(`auth), `opt(`notify), _("&Authentication"), Bluetooth::authentification)),
-		    `VSpacing(0.5),
-		    `Left(`CheckBox(`id(`encrypt), _("&Encryption"), Bluetooth::encryption)),
-		    `VSpacing(0.2)
-		)
-	    ),
-	    `VSpacing(2),
 	    `Frame(_("Scan Options"),
 		`VBox(
 		    `VSpacing(0.2),
@@ -484,8 +468,6 @@ symbol SecurityDialog () {
 
     symbol ret = nil;
 
-    RefreshSecurityWidgets();
-
     while (true) {
 	ret = (symbol) UI::UserInput();
 
@@ -499,19 +481,10 @@ symbol SecurityDialog () {
         }
 	else if (ret == `next)
 	{
-	    Bluetooth::authentification = (boolean) UI::QueryWidget(`id(`auth), `Value);
-
-	    Bluetooth::encryption = (Bluetooth::authentification == false) ? false :
-		(boolean) UI::QueryWidget(`id(`encrypt), `Value);
-
 	    Bluetooth::inquiry_scan = (boolean) UI::QueryWidget(`id(`inq), `Value);
 	    Bluetooth::page_scan = (boolean) UI::QueryWidget(`id(`page), `Value);
 
 	    break;
-	}
-	else if (ret == `auth)
-	{
-	    RefreshSecurityWidgets();
 	}
         else {
             y2error("unexpected retcode: %1", ret);

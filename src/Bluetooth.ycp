@@ -78,12 +78,6 @@ global boolean Modified() {
 // global bluetooth setting
 global boolean enabled = false;
 
-// is authentification enabled?
-global boolean authentification = false;
-
-// is encryption enabled?
-global boolean encryption = false;
-
 // can other detect bluetooth devices?
 global boolean inquiry_scan = false;
 
@@ -164,12 +158,6 @@ global boolean Read() {
     y2milestone("configuration of daemons: %1", daemons);
 
     // read hcid.conf settings
-    // read security settings
-    authentification = (SCR::Read(.bluetooth.hcid.value.device.auth) == ["enable"]);
-    y2milestone("authentification: %1", authentification);
-    encryption= (SCR::Read(.bluetooth.hcid.value.device.encrypt) == ["enable"]);
-    y2milestone("encryption: %1", encryption);
-
     // read scan settings
     inquiry_scan = (SCR::Read(.bluetooth.hcid.value.device.iscan) == ["enable"]);
     y2milestone("inquiry_scan: %1", inquiry_scan);
@@ -198,10 +186,16 @@ global boolean Read() {
     service_class = class & ~0xFFF;
     y2milestone("service_class: %1", tohexstring(service_class));
 
-
     // read PIN
-    list<string> p = splitstring((string)SCR::Read(.target.string, "/etc/bluetooth/pin"), "\n");
-    pin = p[0]:"";
+    pin = ((list<string>)SCR::Read(.bluetooth.hcid.value.options.passkey))[0]:"\"BlueZ\"";
+
+    // remove leading and trailing double quotes
+    string pin_parsed = regexpsub(pin, "^\"(.*)\"$", "\\1");
+    if (pin_parsed != nil)
+    {
+	pin = pin_parsed;
+    }
+    y2milestone("pin: %1", pin);
 
     return true;
 }
@@ -248,8 +242,6 @@ global boolean Write() {
     );
 
     // write hcid.conf settings
-    SCR::Write(.bluetooth.hcid.value.device.auth, [authentification ? "enable" : "disable"]);
-    SCR::Write(.bluetooth.hcid.value.device.encrypt, [encryption ? "enable" : "disable"]);
     SCR::Write(.bluetooth.hcid.value.device.iscan, [inquiry_scan ? "enable" : "disable"]);
     SCR::Write(.bluetooth.hcid.value.device.pscan, [page_scan ? "enable" : "disable"]);
     SCR::Write(.bluetooth.hcid.value.options.security, [security_manager]);
@@ -266,12 +258,21 @@ global boolean Write() {
     }
     SCR::Write(.bluetooth.hcid.value.device.name, [device_name_save]);
 
+    // the same for the PIN
+    string pin_save = pin;
+    if (!regexpmatch(pin_save, "^\""))
+    {
+	pin_save = "\"" + pin_save;
+    }
+    if (!regexpmatch(pin_save, "\"$"))
+    {
+	pin_save = pin_save + "\"";
+    }
+    SCR::Write(.bluetooth.hcid.value.options.passkey, [pin_save]);
+
     // write class settings
     string class_str = tohexstring(device_class + service_class);
     SCR::Write(.bluetooth.hcid.value.device.class, [class_str]);
-
-    // write PIN
-    SCR::Write(.target.string, "/etc/bluetooth/pin", pin);
 
     // flush changes
     SCR::Write(.bluetooth.hcid, nil);
@@ -313,8 +314,6 @@ global boolean Write() {
  */
 global boolean Import (map settings) {
     enabled = settings["enabled"]:false;
-    authentification = settings["authentification"]:false;
-    encryption = settings["encryption"]:false;
     inquiry_scan = settings["inquiry_scan"]:false;
     page_scan = settings["page_scan"]:false;
     daemons = settings["daemons"]:[];
@@ -331,8 +330,6 @@ global boolean Import (map settings) {
 global map Export () {
     return $[
 	"enabled" : enabled,
-	"authentification" : authentification,
-	"encryption" : encryption,
 	"inquiry_scan" : inquiry_scan,
 	"page_scan" : page_scan,
 	"daemons" : daemons,

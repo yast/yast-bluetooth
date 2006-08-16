@@ -110,25 +110,15 @@ _("<P><B>HID2HCI</B>: This is actually not a 'real' daemon, but a help utility f
 a HID adapter into HCI mode (or vice versa). Normally you should not need it.</P>
 "),
 
-    /* Help text for detailed service configuration dialog 1/5*/
+    /* Help text for detailed service configuration dialog 1/3*/
     "security" : _("<P><B>Security Options</B></P>") +
 
-    /* Help text for detailed service configuration dialog 2/5*/
-_("<P>To enhance security, you should enable <B>Authentication</B> and <B>Encryption</B>.</P>") +
-
-    /* Help text for detailed service configuration dialog 3/5*/
-_("<P>Encryption can only be done if authentication is enabled. Activating both
-enhances security a little bit, but you often run into problems if you do so.
-Not all devices support encryption. If you have problems connecting to a remote
-device, try it with encryption disabled.</P>
-") +
-
-    /* Help text for detailed service configuration dialog 4/5*/
+    /* Help text for detailed service configuration dialog 2/3*/
 _("<P>With <B>Inquiry Scan</B>, decide if remote devices detect your
 adapter when scanning for available devices.</P>
 ") +
 
-    /* Help text for detailed service configuration dialog 5/5*/
+    /* Help text for detailed service configuration dialog 3/3*/
 _("<P>Enabling <B>Page Scan</B> allows remote devices to connect to your device.</P>")
 
 ];
