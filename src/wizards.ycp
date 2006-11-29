@@ -87,6 +87,7 @@ any BluetoothSequence() {
     ];
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("bluetooth");
 
     any ret = Sequencer::Run(aliases, sequence);
 
@@ -102,6 +103,7 @@ any BluetoothSequence() {
 any BluetoothAutoSequence() {
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("bluetooth");
     any ret = MainSequence();
 
     UI::CloseDialog();
