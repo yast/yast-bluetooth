@@ -2,6 +2,8 @@
 Wed Nov 29 16:26:36 CET 2006 - lslezak@suse.cz
 
 - display the bluetooth icon (#211565)
+- help text: added description of %h and %d sequences in device
+  name (#144696)
 
 -------------------------------------------------------------------
 Wed Aug 16 14:09:59 CEST 2006 - lslezak@suse.cz
