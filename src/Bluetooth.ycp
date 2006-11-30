@@ -127,13 +127,25 @@ global define boolean InstallPackages() {
  * @return true on success
  */
 global boolean Read() {
+
+    // check whether the sysconfig file exists, if not then use the default values,
+    // bluez-utils package might not be installed at HW proposal in the 2nd stage
+    boolean read_sysconfig = true;
+    const string sysconfig_file = "/etc/sysconfig/bluetooth";
+
+    if (SCR::Read(.target.size, sysconfig_file) < 0)
+    {
+	y2warning("File %1 doesn't exist, using default values", sysconfig_file);
+	read_sysconfig = false;
+    }
+
     // read sysconfig settings
     // read global setting
-    enabled = (SCR::Read(.sysconfig.bluetooth.START_SERVICES) == "yes");
+    enabled = read_sysconfig ? (SCR::Read(.sysconfig.bluetooth.START_SERVICES) == "yes") : false;
     y2milestone("bluetooth enabled: %1", enabled);
 
     // search for all daemon variables
-    list<string> dir = (list<string>) SCR::Dir(.sysconfig.bluetooth);
+    list<string> dir = read_sysconfig ? (list<string>) SCR::Dir(.sysconfig.bluetooth) : [];
     y2debug("detected variables: %1", dir);
 
     list<string> detected_services = detect_services(dir);
@@ -157,16 +169,28 @@ global boolean Read() {
     );
     y2milestone("configuration of daemons: %1", daemons);
 
+
+    // check whether the config file exists, if not then use the default values,
+    // bluez-utils package might not be installed at HW proposal in the 2nd stage
+    boolean read_hcid = true;
+    const string hcid_file = "/etc/bluetooth/hcid.conf";
+
+    if (SCR::Read(.target.size, hcid_file) < 0)
+    {
+	y2warning("File %1 doesn't exist, using default values", hcid_file);
+	read_hcid = false;
+    }
+
     // read hcid.conf settings
     // read scan settings
-    inquiry_scan = (SCR::Read(.bluetooth.hcid.value.device.iscan) == ["enable"]);
+    inquiry_scan = read_hcid ? (SCR::Read(.bluetooth.hcid.value.device.iscan) == ["enable"]) : false;
     y2milestone("inquiry_scan: %1", inquiry_scan);
-    page_scan = (SCR::Read(.bluetooth.hcid.value.device.pscan) == ["enable"]);
+    page_scan = read_hcid ? (SCR::Read(.bluetooth.hcid.value.device.pscan) == ["enable"]) : false;
     y2milestone("page_scan: %1", page_scan);
 
-    security_manager = ((list<string>)SCR::Read(.bluetooth.hcid.value.options.security))[0]:"auto";
+    security_manager = read_hcid ? (((list<string>)SCR::Read(.bluetooth.hcid.value.options.security))[0]:"auto") : "auto";
     y2milestone("security_manager: %1", security_manager);
-    device_name = ((list<string>)SCR::Read(.bluetooth.hcid.value.device.name))[0]:"\"BlueZ %h (%d)\"";
+    device_name = read_hcid ? (((list<string>)SCR::Read(.bluetooth.hcid.value.device.name))[0]:"\"BlueZ %h (%d)\"") : "\"BlueZ %h (%d)\"";
 
     // remove leading and trailing double quotes
     string device_name_parsed = regexpsub(device_name, "^\"(.*)\"$", "\\1");
@@ -177,7 +201,7 @@ global boolean Read() {
     y2milestone("device_name: %1", device_name);
 
     // read device and service class
-    string class_str = ((list<string>)SCR::Read(.bluetooth.hcid.value.device.class))[0]:"0x100100";
+    string class_str = read_hcid ? (((list<string>)SCR::Read(.bluetooth.hcid.value.device.class))[0]:"0x100100") : "0x100100";
     y2milestone("class_str: %1", class_str);
     integer class = tointeger(class_str);
 
@@ -187,7 +211,7 @@ global boolean Read() {
     y2milestone("service_class: %1", tohexstring(service_class));
 
     // read PIN
-    pin = ((list<string>)SCR::Read(.bluetooth.hcid.value.options.passkey))[0]:"\"BlueZ\"";
+    pin = read_hcid ? (((list<string>)SCR::Read(.bluetooth.hcid.value.options.passkey))[0]:"\"BlueZ\"") : "\"BlueZ\"";
 
     // remove leading and trailing double quotes
     string pin_parsed = regexpsub(pin, "^\"(.*)\"$", "\\1");
@@ -195,7 +219,7 @@ global boolean Read() {
     {
 	pin = pin_parsed;
     }
-    y2milestone("pin: %1", pin);
+    y2debug("pin: %1", pin);
 
     return true;
 }
