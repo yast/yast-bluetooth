@@ -38,7 +38,7 @@ The name can contain sequence %h (which is replaced by the host name) or %d
 
     /* Help text for global settings dialog 4/6*/
 _("<P>Assign which services (or <I>profiles</I> as they are called in Bluetooth) are available
-when the Bluetooth system starts in <B>Advanced Daemon Configuration<B>.</P>
+when the Bluetooth system starts in <B>Advanced Daemon Configuration</B>.</P>
 ") +
 
     /* Help text for global settings dialog 5/6*/

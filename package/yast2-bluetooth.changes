@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar  1 15:08:05 CET 2007 - lslezak@suse.cz
+
+- fixed a rich text tag in the help text (#249490)
+- 2.15.1
+
+-------------------------------------------------------------------
 Wed Nov 29 16:26:36 CET 2006 - lslezak@suse.cz
 
 - display the bluetooth icon (#211565)
