@@ -106,6 +106,11 @@ define list<string> detect_services(list<string> all) ``{
     if (all != nil && size(all) > 0)
     {
 	foreach(string var, all, ``{
+		// the SDP_START variable might be lying around from < bluez-3.10
+		// ignore it.
+		if (var == "SDP_START") {
+		    continue;
+		}
 		if (regexpmatch(var, ".*_START$"))
 		{
 		    string daemon_name = regexpsub(var, "(.*)_START$", "\\1");
@@ -114,6 +119,8 @@ define list<string> detect_services(list<string> all) ``{
 	    }
 	);
     }
+    // SDP is always there, but built into hcid since bluez-3.10
+    ret = add(ret, "SDP");
 
     return ret;
 }
@@ -154,6 +161,10 @@ global boolean Read() {
     // reset daemon list
     daemons = [];
     foreach(string service, detected_services, ``{
+	    if ((service == "SDP" ))
+	    {
+		continue;
+	    }
 	    // read start status
 	    boolean service_enabled = (SCR::Read(.sysconfig.bluetooth + (service + "_START")) == "yes");
 
@@ -162,6 +173,17 @@ global boolean Read() {
 
 	    // read daemon arguments
 	    string args = (string)SCR::Read(.sysconfig.bluetooth + (service + "_DAEMON_ARGS"));
+
+	    if ((service == "HCI"))
+	    {
+		boolean sdp_enabled = false;
+		if (regexpmatch(args, "([ \t]|^)-s([ \t]|$)"))
+		{
+		    sdp_enabled = true;
+		}
+		daemons = add(daemons, $[ "service" : "SDP", "enabled": sdp_enabled,
+		    "daemon" : "", "args" : "" ]);
+	    }
 
 	    daemons = add(daemons, $[ "service" : service, "enabled" : service_enabled,
 		"daemon" : binary, "args" : args ]);
@@ -259,7 +281,31 @@ global boolean Write() {
     SCR::Write(.sysconfig.bluetooth.START_SERVICES, (enabled) ? "yes" : "no");
 
     // write daemon settings
+    boolean sdp_enabled = false;
     foreach(map<string,any> d, daemons, ``{
+	    if ((d["service"]:"") == "SDP")
+	    {
+		sdp_enabled = (d["enabled"]:false);
+	    }
+	}
+    );
+    foreach(map<string,any> d, daemons, ``{
+	    if ((d["service"]:"") == "SDP")
+	    {
+		// SDPD is now handled by passing "-s" to hcid, since bluez-3.10
+		continue;
+	    }
+	    else if ((d["service"]:"") == "HCI")
+	    {
+		if (regexpmatch(d["args"]:"", "([ \t]|^)-s([ \t]|$)"))
+		{
+		    d["args"] = regexpsub(d["args"]:"", "(.*)([ \t]|^)-s([ \t]|$)(.*)", "\\1 \\4");
+		}
+		if (sdp_enabled)
+		{
+		    d["args"] = "-s " + (d["args"]:"");
+		}
+	    }
 	    SCR::Write(.sysconfig.bluetooth + ((d["service"]:"") + "_START"), d["enabled"]:false ? "yes" : "no");
 	    SCR::Write(.sysconfig.bluetooth + ((d["service"]:"") + "_DAEMON_ARGS"), d["args"]:"");
 	}

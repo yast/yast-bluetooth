@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed May 23 10:26:31 CEST 2007 - lslezak@suse.cz
+
+- fix for bluez >= 3.10 (SDP daemon is now included in HCID daemon)
+  (#276650)
+- 2.15.2
+
+-------------------------------------------------------------------
 Thu Mar  1 15:08:05 CET 2007 - lslezak@suse.cz
 
 - fixed a rich text tag in the help text (#249490)
