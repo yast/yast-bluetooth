@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 24 13:07:18 CEST 2007 - lslezak@suse.cz
+
+- do not detect bluetooth devices when creating installation
+  proposal, use the default value from sysconfig (#299734)
+- 2.15.3
+
+-------------------------------------------------------------------
 Wed May 23 10:26:31 CEST 2007 - lslezak@suse.cz
 
 - fix for bluez >= 3.10 (SDP daemon is now included in HCID daemon)

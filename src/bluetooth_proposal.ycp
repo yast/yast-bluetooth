@@ -35,14 +35,8 @@ if(func == "MakeProposal") {
         Bluetooth::proposal_valid = true;
 	boolean progress = Progress::set(false);
 
-	// open progress popup window
-	UI::OpenDialog(`VBox(`Label(_("Detecting Bluetooth adapters..."))));
 	Bluetooth::Read();
-	// detect Bluetooth device and propose configuration
-	Bluetooth::Propose();
 
-	// close progress popup
-	UI::CloseDialog();
 	Progress::set(progress);
     }
     string proposal = Bluetooth::Summary();
