@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep  3 08:11:57 CEST 2007 - lslezak@suse.cz
+
+- fixed saving of empty PIN to the config file, allow alphanumeric
+  chars in PIN if they are already present (#297804)
+- 2.15.4
+
+-------------------------------------------------------------------
 Fri Aug 24 13:07:18 CEST 2007 - lslezak@suse.cz
 
 - do not detect bluetooth devices when creating installation

@@ -318,11 +318,11 @@ global boolean Write() {
 
     // save device name
     string device_name_save = device_name;
-    if (!regexpmatch(device_name_save, "^\""))
+    if (!regexpmatch(device_name, "^\""))
     {
 	device_name_save = "\"" + device_name_save;
     }
-    if (!regexpmatch(device_name_save, "\"$"))
+    if (!regexpmatch(device_name, "\"$"))
     {
 	device_name_save = device_name_save + "\"";
     }
@@ -330,11 +330,11 @@ global boolean Write() {
 
     // the same for the PIN
     string pin_save = pin;
-    if (!regexpmatch(pin_save, "^\""))
+    if (!regexpmatch(pin, "^\""))
     {
 	pin_save = "\"" + pin_save;
     }
-    if (!regexpmatch(pin_save, "\"$"))
+    if (!regexpmatch(pin, "\"$"))
     {
 	pin_save = pin_save + "\"";
     }

@@ -116,8 +116,11 @@ symbol GlobalOptionsDialog () {
     Wizard::HideBackButton();
     Wizard::SetAbortButton(`abort, Label::CancelButton());
 
-    // allow only numbers in PIN widget
-    UI::ChangeWidget(`id(`pin), `ValidChars, "0132456789");
+    if (regexpmatch(Bluetooth::pin, "^[0-9]*$"))
+    {
+	// allow only numbers in PIN widget
+	UI::ChangeWidget(`id(`pin), `ValidChars, "0132456789");
+    }
 
     RefreshGlobalWidgets();
     RefreshPINWidgets();
